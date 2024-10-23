@@ -95,3 +95,8 @@ Generated\ Files/
 *.user
 *.userosscache
 *.sln.docstates
+
+
+#Folder to not ignore
+!DesperateEngine/DesperateEngine/Assets/Meshes/*.obj
+!AlgorithmAnal/AlgorithmAnal/lib/opencv/bin
