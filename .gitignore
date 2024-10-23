@@ -98,5 +98,5 @@ Generated\ Files/
 
 
 #Folder to not ignore
-!DesperateEngine/DesperateEngine/Assets/Meshes/*.obj
 !AlgorithmAnal/AlgorithmAnal/lib/opencv/bin
+!AlgorithmAnal/lib/opencv/bin
