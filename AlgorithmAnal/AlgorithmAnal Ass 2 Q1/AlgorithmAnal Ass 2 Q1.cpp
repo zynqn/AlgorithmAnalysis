@@ -7,8 +7,7 @@
 
 #undef MAX
 #define nl "\n"
-#define MAX std::numeric_limits<double>::max()
-// MAX was 255
+constexpr double MAX = std::numeric_limits<double>::max(); // MAX was 255
 
 int main()
 {
@@ -45,23 +44,12 @@ int main()
 	int rows = energyMap.rows, cols = energyMap.cols;
 	cv::Mat cumMap(energyMap.size(), CV_64F); // cumulative energy map
 
-	double max = 0.0;
-#if 0
-	for (int i = 0; i < rows; ++i)
-		for (int j = 0; j < cols; ++j)
-			max = energyMap.at<double>(i, j) > max ? energyMap.at<double>(i, j) : max;
-
-	for (int i = 0; i < rows; ++i)
-		for (int j = 0; j < cols; ++j)
-			energyMap.at<double>(i, j) = energyMap.at<double>(i, j) / max;
-#endif
-
 	// copy last row over
 	for (int j = 0; j < cols; ++j)
 		cumMap.at<double>(rows - 1, j) = energyMap.at<double>(rows - 1, j);
 
 	// cumulatively sum best energy value from bottom to top, taking only 3 pixels into account
-	max = 0.0;
+	double max = 0.0;
 	for (int i = rows - 2; i > -1; --i)
 		for (int j = 0; j < cols; ++j)
 		{
@@ -69,11 +57,14 @@ int main()
 			double midVal = cumMap.at<double>(i + 1, j);
 			double rightVal = j < cols - 1 ? cumMap.at<double>(i + 1, j + 1) : MAX;
 			double minVal = std::min({ leftVal, midVal, rightVal });
+
+			// set the current pixel to its mirror in the original energy map + the lowest value of the 3 adjacent pixels below it
 			double &currVal = cumMap.at<double>(i, j);
 			currVal = energyMap.at<double>(i, j) + minVal;
 			max = currVal > max ? currVal : max;
 		}
 
+	// normalise values to 0 to 255
 	for (int i = 0; i < rows; ++i)
 		for (int j = 0; j < cols; ++j)
 			cumMap.at<double>(i, j) = cumMap.at<double>(i, j) / max * 255.0;
@@ -95,6 +86,7 @@ int main()
 		if (i + 1 == rows)
 			break;
 
+		// select column that has the lowest energy
 		double leftVal = col ? cumMap.at<double>(i + 1, col - 1) : MAX;
 		double midVal = cumMap.at<double>(i + 1, col);
 		double rightVal = col < cols - 1 ? cumMap.at<double>(i + 1, col + 1) : MAX;
