@@ -51,12 +51,16 @@ int main()
 	cv::split(img, channels);  // channels[0] = Blue, channels[1] = Green, channels[2] = Red
 	
 	// get original energy map
-	cv::Mat displayEnergyMap = CalculateEnergyMap(channels);
+	cv::Mat energyMap = CalculateEnergyMap(channels);
+
+	cv::Mat displayEnergyMap;
 
 	// Convert the energy map back to 8-bit format for display
-	cv::normalize(displayEnergyMap, displayEnergyMap, 0, 255, cv::NORM_MINMAX);
-	displayEnergyMap.convertTo(displayEnergyMap, CV_8U);
+	cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
+	energyMap.convertTo(displayEnergyMap, CV_8U);
 
+	int rows = energyMap.rows, cols = energyMap.cols;
+	
 
 	// ===================
 	// DISPLAY THE WINDOWS
@@ -67,11 +71,6 @@ int main()
 
 	cv::moveWindow("Original Image", 0, 45);
 	cv::moveWindow("Original Energy Map", img.cols, 45);
-
-
-	cv::Mat imgClone = img.clone();
-
-	SeamCarvingToWidth(imgClone, 400);
 
 	cv::waitKey(0);
 

@@ -7,12 +7,12 @@
 cv::Mat CalculateEnergyMap(std::vector<cv::Mat> const& channels)
 {
 	cv::Mat gradX, gradY;
-	cv::Mat energyMap = cv::Mat::zeros(channels[0].size(), CV_32F);
+	cv::Mat energyMap = cv::Mat::zeros(channels[0].size(), CV_64F);
 
 	for (const auto& channel : channels) 
 	{
-		cv::Sobel(channel, gradX, CV_32F, 1, 0);
-		cv::Sobel(channel, gradY, CV_32F, 0, 1);
+		cv::Sobel(channel, gradX, CV_64F, 1, 0);
+		cv::Sobel(channel, gradY, CV_64F, 0, 1);
 
 		energyMap += cv::abs(gradX) + cv::abs(gradY);
 	}
@@ -31,8 +31,6 @@ std::vector<int> FindVerticalSeamGreedy(cv::Mat const& energyMap)
 	cv::Point minLoc;
 	cv::minMaxLoc(energyMap.row(0).colRange(1, cols - 1), &minVal, nullptr, &minLoc, nullptr);
 	seam[0] = minLoc.x;
-
-	std::cout << "min val: " << minVal << " | Min index: " << minLoc.x << ", " << minLoc.y << '\n';
 
 	//return seam;
 
@@ -54,8 +52,6 @@ std::vector<int> FindVerticalSeamGreedy(cv::Mat const& energyMap)
 		// check right neighbour
 		if (prevX < cols && energyMap.at<uchar>(i, prevX + 1) < energyMap.at<uchar>(i, seam[i]))
 			seam[i] = prevX + 1;
-
-		std::cout << "Seam[" << i << "]" << ": " << seam[i] << '\n';
 	}
 #endif
 	return seam;

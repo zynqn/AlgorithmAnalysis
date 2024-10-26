@@ -10,18 +10,17 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 
-
+#undef MAX
 #define nl '\n'
-
+constexpr double MAX = std::numeric_limits<double>::max(); // MAX was 255
 
 
 // global variables
 namespace 
 {
-	//double zoomFactor       = 1.0;
 	double zoomLevel           = 1.0;
 	const double zoomIncrement = 0.1;
-	cv::Point2d zoomCenter (0, 0);
+	cv::Point2d zoomCenter    (0, 0);
 }
 
 namespace cv
