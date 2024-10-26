@@ -157,7 +157,8 @@ void SeamCarvingToWidth(cv::Mat& img, int targetWidth)
 
 		std::vector<int> seam = FindVerticalSeamGreedy(energyMap);
 
-		VisualizeSeam(img, seam, (255, 0, 0), 50);
+
+		VisualizeSeam(img, seam, (0, 0, 255), 50);
 		RemoveVerticalSeam(img, seam);
 	}
 }

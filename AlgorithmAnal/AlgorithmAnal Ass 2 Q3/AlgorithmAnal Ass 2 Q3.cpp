@@ -22,7 +22,7 @@ int main()
 	// ==============
 	
 	// load the image
-	cv::Mat img = cv::imread("assets/surfer.png");
+	cv::Mat img = cv::imread("assets/clock.png");
 
 	// ensure image loaded properly
 	if (img.empty())
@@ -72,7 +72,11 @@ int main()
 	cv::moveWindow("Original Image", 0, 45);
 	cv::moveWindow("Original Energy Map", img.cols, 45);
 
+
+	// clone the original image for the seam carving
 	cv::Mat imgClone = img.clone();
+
+	// game loop
 	while (true)
 	{
 		int key = cv::waitKey(0);
