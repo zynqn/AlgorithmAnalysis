@@ -165,10 +165,16 @@ void SeamCarvingToWidth(cv::Mat& img, int targetWidth)
 
 void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour, int waitForMs)
 {
+	static cv::Mat imgClone = img.clone();
 	// assign colour to the seam for visualization
 	for (int i{}; i < img.rows; ++i)
+	{
 		img.at<cv::Vec3b>(i, seam[i]) = colour;
+		imgClone.at<cv::Vec3b>(i, seam[i]) = colour;
+	}
 
 	cv::imshow("Seam Visualization", img);
+	cv::imshow("Simps", imgClone);
+
 	cv::waitKey(waitForMs);
 }
