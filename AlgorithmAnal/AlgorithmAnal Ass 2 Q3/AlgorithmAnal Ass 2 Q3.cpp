@@ -72,12 +72,13 @@ int main()
 	cv::moveWindow("Original Image", 0, 45);
 	cv::moveWindow("Original Energy Map", img.cols, 45);
 
+	cv::Mat imgClone = img.clone();
 	while (true)
 	{
 		int key = cv::waitKey(0);
 
 		if (key == 'c')
-			SeamCarvingToWidth(img, 500);
+			SeamCarvingToWidth(imgClone, 500);
 
 		else if (key == cv::ESC_KEY)
 			break;
