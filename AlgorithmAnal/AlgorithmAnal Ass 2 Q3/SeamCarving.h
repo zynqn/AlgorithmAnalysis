@@ -7,11 +7,17 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 
+#include "Utility.h"
 
+std::vector<util::Mask> GetBoundedArea(cv::Point2i start, cv::Point2i end);
 
 cv::Mat CalculateEnergyMap(std::vector<cv::Mat> const& channels);
 
+void ModifyEnergyMap(cv::Mat &energyMap, const std::vector<util::Mask> &area, double setTo = 0.0);
+
 cv::Mat CalculateCumMap(const cv::Mat &energyMap);
+
+bool ModifyMask(std::vector<util::Mask> &area, const std::vector<int> &seam);
 
 // =============
 // VERTICAL SEAM
@@ -24,7 +30,7 @@ void RemoveVerticalSeam(cv::Mat const& img, std::vector<int> const& seam);
 
 // perform seam carving on the img to the specified target width
 void SeamCarvingToWidth(cv::Mat &img, int targetWidth);
-void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth);
+void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth, bool isRemovingObject = false);
 
 void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour = (255, 0, 0), int waitForMs = 1); // ms was 50
 

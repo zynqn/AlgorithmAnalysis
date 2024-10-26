@@ -16,6 +16,7 @@
 #define nl '\n'
 #define NOW std::chrono::system_clock::now()
 constexpr double MAX = std::numeric_limits<double>::max(); // MAX was 255
+constexpr int THRESHOLD = 40;
 
 #ifdef _DEBUG
 #define WRAP(x) x
@@ -39,6 +40,13 @@ namespace cv
 
 namespace util
 {
+
+	struct Mask
+	{
+		int start = 0;
+		int size = 0;
+		int pos = 0;
+	};
 
 	inline void BeginProfile()
 	{

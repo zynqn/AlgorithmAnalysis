@@ -5,6 +5,16 @@
 #include <iomanip>
 #include <iostream>
 
+
+
+std::vector<util::Mask> GetBoundedArea(cv::Point2i start, cv::Point2i end)
+{
+	std::vector<util::Mask> ret;
+	for (int i = start.y; i < end.y; ++i)
+		ret.push_back({ start.x, end.x - start.x, i }); // idk why emplace_back got error
+	return ret;
+}
+
 cv::Mat CalculateEnergyMap(std::vector<cv::Mat> const& channels)
 {
 	cv::Mat gradX, gradY;
@@ -19,6 +29,25 @@ cv::Mat CalculateEnergyMap(std::vector<cv::Mat> const& channels)
 	}
 
 	return energyMap;
+}
+
+void ModifyEnergyMap(cv::Mat &energyMap, const std::vector<util::Mask> &area, double setTo)
+{
+#if 0
+	for (int i = 0; i < energyMap.rows; ++i)
+		for (int j = 0; j < energyMap.cols; ++j)
+			if (j > start.x && j < end.x && i > start.y && i < end.y)
+			{
+				double &currVal = energyMap.at<double>(i, j);
+				currVal = 0.0;
+				//currVal = std::max(0.0, currVal - setTo);
+				//std::cout << currVal << nl;
+			}
+#endif
+	
+	for (const util::Mask &slice : area)
+		for (int curr = slice.start; curr < slice.start + slice.size; ++curr)
+			energyMap.at<double>(slice.pos, curr) = setTo;
 }
 
 std::vector<int> FindVerticalSeamGreedy(cv::Mat const& energyMap)
@@ -143,6 +172,27 @@ cv::Mat CalculateCumMap(const cv::Mat &energyMap)
 	return cumMap;
 }
 
+bool ModifyMask(std::vector<util::Mask> &area, const std::vector<int> &seam)
+{
+	bool isMaskGone = true;
+
+	for (util::Mask &slice : area)
+	{
+		int currSeam = seam[slice.pos];
+
+		if (currSeam < slice.start)
+			--slice.start;
+		else if (currSeam >= slice.start && currSeam < slice.start + slice.size)
+			--slice.size;
+
+		// mask is gone when all slices have a size of THRESHOLD or less
+		if (slice.size > THRESHOLD)
+			isMaskGone = false;
+	}
+
+	return isMaskGone;
+}
+
 std::vector<int> FindVerticalSeamDP(cv::Mat &cumMap)
 {
 	int rows = cumMap.rows, cols = cumMap.cols;
@@ -226,7 +276,7 @@ void SeamCarvingToWidth(cv::Mat &img, int targetWidth)
 	}
 }
 
-void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth)
+void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth, bool isRemovingObject)
 {
 	if (targetWidth >= img.cols)
 	{
@@ -234,7 +284,9 @@ void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth)
 		return;
 	}
 
-	while (img.cols > targetWidth)
+	std::vector<util::Mask> toRemove = GetBoundedArea({ 30, 0 }, { 150, 350 }); // area to remove
+
+	while (true)
 	{
 		std::vector<cv::Mat> channels;
 
@@ -246,6 +298,9 @@ void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth)
 		WRAP(util::BeginProfile());
 		cv::Mat energyMap = CalculateEnergyMap(channels);
 		WRAP(util::EndProfile("Energy Map"));
+
+		ModifyEnergyMap(energyMap, toRemove, 0.0);
+		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
 
 		WRAP(util::BeginProfile());
 		cv::Mat cumMap = CalculateCumMap(energyMap);
@@ -262,6 +317,13 @@ void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth)
 		WRAP(util::BeginProfile());
 		RemoveVerticalSeam(img, seam);
 		WRAP(util::EndProfile("Remove Seam"));
+
+		// returns true if mask is gone
+		if (ModifyMask(toRemove, seam) && isRemovingObject)
+			break;
+
+		if (img.cols <= targetWidth && !isRemovingObject)
+			break;
 	}
 }
 
@@ -275,8 +337,8 @@ void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& 
 		imgClone.at<cv::Vec3b>(i, seam[i]) = colour;
 	}
 
-	cv::imshow("Seam Visualization", img);
-	cv::imshow("Simps", imgClone);
+	cv::imshow("Output", img);
+	cv::imshow("All Seams", imgClone);
 
 	cv::waitKey(waitForMs);
 }
