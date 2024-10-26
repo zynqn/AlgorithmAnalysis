@@ -79,7 +79,7 @@ std::vector<int> FindVerticalSeamGreedy(cv::Mat const& energyMap)
 		int endCol = std::min(cols - 2, prevCol + 1);
 
 		// find minimum energy value in the neighboring columns
-		cv::minMaxLoc(energyMap.row(row).colRange(startCol, endCol + 1), &minVal, nullptr, &minLoc);
+		cv::minMaxLoc(energyMap.row(row).colRange(startCol, endCol), &minVal, nullptr, &minLoc);
 
 		seam[row] = startCol + minLoc.x; // adjust seam index based on the range
 	}
@@ -157,7 +157,7 @@ void SeamCarvingToWidth(cv::Mat& img, int targetWidth)
 
 		std::vector<int> seam = FindVerticalSeamGreedy(energyMap);
 
-		VisualizeSeam(img, seam, (255, 0, 0), 200);
+		VisualizeSeam(img, seam, (255, 0, 0), 50);
 		RemoveVerticalSeam(img, seam);
 	}
 }
