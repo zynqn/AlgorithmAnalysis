@@ -72,7 +72,18 @@ int main()
 	cv::moveWindow("Original Image", 0, 45);
 	cv::moveWindow("Original Energy Map", img.cols, 45);
 
-	cv::waitKey(0);
+	while (true)
+	{
+		int key = cv::waitKey(0);
+
+		if (key == 'c')
+			SeamCarvingToWidth(img, 400);
+
+		else if (key == cv::ESC_KEY)
+			break;
+	}
+
+	
 
 	cv::destroyAllWindows();
 
