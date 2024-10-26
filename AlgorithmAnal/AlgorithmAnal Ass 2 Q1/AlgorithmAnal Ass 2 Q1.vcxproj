@@ -148,7 +148,12 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\AlgorithmAnal Ass 2 Q3\SeamCarving.cpp" />
     <ClCompile Include="AlgorithmAnal Ass 2 Q1.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AlgorithmAnal Ass 2 Q3\SeamCarving.h" />
+    <ClInclude Include="..\AlgorithmAnal Ass 2 Q3\Utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

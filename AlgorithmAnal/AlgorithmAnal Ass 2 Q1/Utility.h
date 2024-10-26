@@ -10,18 +10,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <chrono>
-
 #undef MAX
 #define nl '\n'
-#define NOW std::chrono::system_clock::now()
 constexpr double MAX = std::numeric_limits<double>::max(); // MAX was 255
 
-#ifdef _DEBUG
-#define WRAP(x) x
-#else
-#define WRAP(x)
-#endif
 
 // global variables
 namespace 
@@ -29,7 +21,6 @@ namespace
 	double zoomLevel           = 1.0;
 	const double zoomIncrement = 0.1;
 	cv::Point2d zoomCenter    (0, 0);
-	std::chrono::system_clock::time_point start = NOW;
 }
 
 namespace cv
@@ -39,18 +30,6 @@ namespace cv
 
 namespace util
 {
-
-	inline void BeginProfile()
-	{
-		start = NOW;
-	}
-
-	inline void EndProfile(const std::string &label)
-	{
-		double elapsed = std::chrono::duration<double, std::milli>(NOW - start).count();
-		std::cout << label << ": " << elapsed << " ms \n";
-	}
-
 	//// Function to handle zoom in/out
 	//void handleZoom(int direction, cv::Mat& img, cv::Mat& displayImg)
 	//{
@@ -66,7 +45,7 @@ namespace util
 	//}
 
 	// Function to zoom into the image
-	inline cv::Mat zoomImage(const cv::Mat& img, double zoom, const cv::Point2d& center) 
+	cv::Mat zoomImage(const cv::Mat& img, double zoom, const cv::Point2d& center) 
 	{
 		int width = static_cast<int>(img.cols / zoom);
 		int height = static_cast<int>(img.rows / zoom);
@@ -81,7 +60,7 @@ namespace util
 		return img(roi).clone();  // Return the zoomed image
 	}
 
-	inline void mouseCallback(int event, int x, int y, int flags, void* data)
+	void mouseCallback(int event, int x, int y, int flags, void* data)
 	{
 		//  get the image data from the void*
 		cv::Mat* img = (cv::Mat*)data;
@@ -138,7 +117,7 @@ namespace util
 					cv::putText(displayImg, text, cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
 
 					// Show the image with the text overlay
-					cv::imshow("Original Image", displayImg);
+					cv::imshow("Output", displayImg);
 
 				}
 				break;

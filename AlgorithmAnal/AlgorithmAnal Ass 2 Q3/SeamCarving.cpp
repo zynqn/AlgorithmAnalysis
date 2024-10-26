@@ -1,4 +1,5 @@
 #include "SeamCarving.h"
+#include "Utility.h"
 
 #include <vector>
 #include <iomanip>
@@ -11,8 +12,8 @@ cv::Mat CalculateEnergyMap(std::vector<cv::Mat> const& channels)
 
 	for (const auto& channel : channels) 
 	{
-		cv::Sobel(channel, gradX, CV_64F, 1, 0);
-		cv::Sobel(channel, gradY, CV_64F, 0, 1);
+		cv::Sobel(channel, gradX, CV_64F, 1, 0, 3);
+		cv::Sobel(channel, gradY, CV_64F, 0, 1, 3);
 
 		energyMap += cv::abs(gradX) + cv::abs(gradY);
 	}
@@ -106,7 +107,70 @@ std::vector<int> FindVerticalSeamGreedy(cv::Mat const& energyMap)
 #endif
 }
 
+cv::Mat CalculateCumMap(const cv::Mat &energyMap)
+{
+	cv::Mat cumMap(energyMap.size(), CV_64F);
+	int rows = energyMap.rows, cols = energyMap.cols;
+	double max = 0.0;
 
+	if (!rows || !cols)
+		return cumMap;
+
+	// copy last row over
+	for (int j = 0; j < cols; ++j)
+		cumMap.at<double>(rows - 1, j) = energyMap.at<double>(rows - 1, j);
+
+	// cumulatively sum best energy value from bottom to top, taking only 3 pixels into account
+	for (int i = rows - 2; i > -1; --i)
+		for (int j = 0; j < cols; ++j)
+		{
+			double leftVal = j ? cumMap.at<double>(i + 1, j - 1) : MAX;
+			double midVal = cumMap.at<double>(i + 1, j);
+			double rightVal = j < cols - 1 ? cumMap.at<double>(i + 1, j + 1) : MAX;
+			double minVal = std::min({ leftVal, midVal, rightVal });
+
+			// set the current pixel to its mirror in the original energy map + the lowest value of the 3 adjacent pixels below it
+			double &currVal = cumMap.at<double>(i, j);
+			currVal = energyMap.at<double>(i, j) + minVal;
+			max = currVal > max ? currVal : max;
+		}
+
+	// normalise values to 0 to 255
+	for (int i = 0; i < rows; ++i)
+		for (int j = 0; j < cols; ++j)
+			cumMap.at<double>(i, j) = cumMap.at<double>(i, j) / max * 255.0;
+
+	return cumMap;
+}
+
+std::vector<int> FindVerticalSeamDP(cv::Mat &cumMap)
+{
+	int rows = cumMap.rows, cols = cumMap.cols;
+	std::vector<int> seam(rows);
+
+	if (!rows || !cols)
+		return seam;
+
+	// find col with smallest cumulative sum in the first row
+	int smallestCum = 0;
+	for (int j = 1; j < cols; ++j)
+		smallestCum = cumMap.at<double>(0, j) < cumMap.at<double>(0, smallestCum) ? j : smallestCum;
+
+	int col = smallestCum;
+	seam[0] = col;
+
+	// find path of least resistance (aka the seam to cut)
+	for (int i = 0; i < rows - 1; ++i)
+	{
+		// select column that has the lowest energy
+		double leftVal = col ? cumMap.at<double>(i + 1, col - 1) : MAX;
+		double midVal = cumMap.at<double>(i + 1, col);
+		double rightVal = col < cols - 1 ? cumMap.at<double>(i + 1, col + 1) : MAX;
+		seam[i + 1] = col = leftVal < midVal ? leftVal < rightVal ? col - 1 : col + 1 : midVal < rightVal ? col : col + 1;
+	}
+
+	return seam;
+}
 
 void RemoveVerticalSeam(cv::Mat& img, std::vector<int> const& seam)
 {
@@ -135,8 +199,7 @@ void RemoveVerticalSeam(cv::Mat& img, std::vector<int> const& seam)
 #endif
 }
 
-
-void SeamCarvingToWidth(cv::Mat& img, int targetWidth)
+void SeamCarvingToWidth(cv::Mat &img, int targetWidth)
 {
 	if (targetWidth >= img.cols)
 	{
@@ -163,12 +226,59 @@ void SeamCarvingToWidth(cv::Mat& img, int targetWidth)
 	}
 }
 
+void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth)
+{
+	if (targetWidth >= img.cols)
+	{
+		std::cerr << "Target width is " << targetWidth << " but image width is " << img.cols << nl;
+		return;
+	}
+
+	while (img.cols > targetWidth)
+	{
+		std::vector<cv::Mat> channels;
+
+		WRAP(util::BeginProfile());
+		cv::split(img, channels); // channels[0] = blue, channels[1] = green, channels[2] = red
+		WRAP(util::EndProfile("Split Channels"));
+
+		// recalculate energy map
+		WRAP(util::BeginProfile());
+		cv::Mat energyMap = CalculateEnergyMap(channels);
+		WRAP(util::EndProfile("Energy Map"));
+
+		WRAP(util::BeginProfile());
+		cv::Mat cumMap = CalculateCumMap(energyMap);
+		WRAP(util::EndProfile("Cum Map"));
+
+		WRAP(util::BeginProfile());
+		std::vector<int> seam = FindVerticalSeamDP(cumMap);
+		WRAP(util::EndProfile("Find Seam"));
+
+		WRAP(util::BeginProfile());
+		VisualizeSeam(img, seam, (0, 0, 255));
+		WRAP(util::EndProfile("Visualize Seam"));
+
+		WRAP(util::BeginProfile());
+		RemoveVerticalSeam(img, seam);
+		WRAP(util::EndProfile("Remove Seam"));
+	}
+}
+
 void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour, int waitForMs)
 {
 	// assign colour to the seam for visualization
 	for (int i{}; i < img.rows; ++i)
 		img.at<cv::Vec3b>(i, seam[i]) = colour;
 
-	cv::imshow("Seam Visualization", img);
+	cv::imshow("Output", img);
 	cv::waitKey(waitForMs);
+}
+
+void DrawBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour)
+{
+	for (int i = 0; i < img.rows; ++i)
+		img.at<cv::Vec3b>(i, pos) = colour;
+
+	cv::imshow("Input", img);
 }

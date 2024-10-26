@@ -18,5 +18,16 @@
     <ClCompile Include="AlgorithmAnal Ass 2 Q1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\AlgorithmAnal Ass 2 Q3\SeamCarving.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AlgorithmAnal Ass 2 Q3\SeamCarving.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AlgorithmAnal Ass 2 Q3\Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

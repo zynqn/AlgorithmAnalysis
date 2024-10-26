@@ -11,23 +11,21 @@
 
 cv::Mat CalculateEnergyMap(std::vector<cv::Mat> const& channels);
 
-cv::Mat CalculateCumMap(const cv::Mat &energyMap);
+
 
 // =============
 // VERTICAL SEAM
 // =============
 // - start from top row. At each pixel, choose the pixel with the least energy from the row below (directly under or one pixel to the left/right)
 std::vector<int> FindVerticalSeamGreedy(cv::Mat const& energyMap);
-std::vector<int> FindVerticalSeamDP(cv::Mat &cumMap);
 
 void RemoveVerticalSeam(cv::Mat const& img, std::vector<int> const& seam);
 
+
 // perform seam carving on the img to the specified target width
-void SeamCarvingToWidth(cv::Mat &img, int targetWidth);
-void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth);
+void SeamCarvingToWidth(cv::Mat& img, int targetWidth);
 
-void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour = (255, 0, 0), int waitForMs = 1); // ms was 50
+void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour = (255, 0, 0), int waitForMs = 50);
 
-void DrawBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 
 #endif
