@@ -136,6 +136,39 @@ std::vector<int> FindVerticalSeamGreedy(cv::Mat const& energyMap)
 #endif
 }
 
+std::vector<int> FindHorizontalSeamGreedy(cv::Mat const& energyMap)
+{
+	int rows = energyMap.rows;
+	int cols = energyMap.cols;
+
+	// Vector to store row indices of the seam pixels
+	std::vector<int> seam(cols);
+
+	// Find the smallest energy in the last row first
+	double minVal;
+	cv::Point minLoc;
+	minMaxLoc(energyMap.col(cols - 1).rowRange(1, energyMap.rows - 2), &minVal, nullptr, &minLoc, nullptr);
+	seam[cols - 1] = minLoc.y + 1;
+
+	// iterate through all columns to find horizontal seam
+	for (int col = cols - 2; col >= 0; --col)
+	{
+		// get previous row
+		int prevRow = seam[col + 1];
+
+		// get start and end row (directly below, left below or right below), (ignore edges)
+		int startRow = std::max(1, prevRow - 1);
+		int endRow = std::min(rows - 2, prevRow + 1);
+
+		// find minimum energy value in the neighboring columns
+		cv::minMaxLoc(energyMap.col(col).rowRange(startRow, endRow), &minVal, nullptr, &minLoc);
+
+		seam[col] = startRow + minLoc.y; // adjust seam index based on the range
+	}
+
+	return seam;
+}
+
 cv::Mat CalculateCumMap(const cv::Mat &energyMap)
 {
 	cv::Mat cumMap(energyMap.size(), CV_64F);
@@ -249,6 +282,24 @@ void RemoveVerticalSeam(cv::Mat& img, std::vector<int> const& seam)
 #endif
 }
 
+void RemoveHorizontalSeam(cv::Mat& img, std::vector<int> const& seam)
+{
+	int rows = img.rows;
+	int cols = img.cols;
+
+	//remove the seam from the image
+	for (int col{}; col < cols; ++col)
+	{
+		int seamRow = seam[col];
+		for (int row = seamRow; row < rows - 1; ++row)
+			img.at<cv::Vec3b>(row, col) = img.at<cv::Vec3b>(row + 1, col);
+
+	}
+
+	// resize the whole image 
+	img = img.rowRange(0, rows - 1);
+}
+
 void SeamCarvingToWidth(cv::Mat &img, int targetWidth)
 {
 	if (targetWidth >= img.cols)
@@ -273,6 +324,33 @@ void SeamCarvingToWidth(cv::Mat &img, int targetWidth)
 
 		VisualizeSeam(img, seam, (0, 0, 255), 50);
 		RemoveVerticalSeam(img, seam);
+	}
+}
+
+void SeamCarvingToHeight(cv::Mat& img, int targetHeight)
+{
+	if (targetHeight >= img.rows)
+	{
+		std::cerr << "Target height must be smaller than the current width!\n";
+		return;
+	}
+
+
+
+	while (img.rows > targetHeight)
+	{
+		std::vector<cv::Mat> channels;
+
+		cv::split(img, channels); // channels[0] = blue, channels[1] = green, channels[2] = red
+
+		// recalculate energy map
+		cv::Mat energyMap = CalculateEnergyMap(channels);
+
+		std::vector<int> seam = FindHorizontalSeamGreedy(energyMap);
+
+
+		VisualizeHSeam(img, seam, (0, 0, 255), 50);
+		RemoveHorizontalSeam(img, seam);
 	}
 }
 
@@ -335,6 +413,22 @@ void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& 
 	{
 		img.at<cv::Vec3b>(i, seam[i]) = colour;
 		imgClone.at<cv::Vec3b>(i, seam[i]) = colour;
+	}
+
+	cv::imshow("Output", img);
+	cv::imshow("All Seams", imgClone);
+
+	cv::waitKey(waitForMs);
+}
+
+void VisualizeHSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour, int waitForMs)
+{
+	static cv::Mat imgClone = img.clone();
+	// assign colour to the seam for visualization
+	for (int i{}; i < img.cols; ++i)
+	{
+		img.at<cv::Vec3b>(seam[i], i) = colour;
+		imgClone.at<cv::Vec3b>(seam[i], i) = colour;
 	}
 
 	cv::imshow("Output", img);
