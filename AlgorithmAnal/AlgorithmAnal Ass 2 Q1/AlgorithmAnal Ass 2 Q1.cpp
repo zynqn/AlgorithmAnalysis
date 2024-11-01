@@ -101,8 +101,8 @@ int main()
 	// draw windows and ui
 	cv::imshow("Input", img);
 	cv::putText(img, "Press 'space' to start carving!", { 10, 30 }, cv::FONT_HERSHEY_SIMPLEX, 0.5, { 255, 255, 255 });
-	cv::createTrackbar("Width", "Input", nullptr, img.cols, callback, &img);
-	cv::createTrackbar("Height", "Input", nullptr, img.rows, callbackH, &img);
+	cv::createTrackbar("Width", "Input", nullptr, img.cols - 1, callback, &img);
+	cv::createTrackbar("Height", "Input", nullptr, img.rows - 1, callbackH, &img);
 	cv::imshow("Output", imgClone);
 	cv::imshow("Object Removal", displayCumMap);
 
