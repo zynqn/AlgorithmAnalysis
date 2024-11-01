@@ -40,6 +40,18 @@ void SeamCarvingToHeightDP(cv::Mat& img, int targetHeight, bool isRemovingObject
 void VisualizeSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour = (255, 0, 0), int waitForMs = 1); // ms was 50
 void VisualizeSeamH(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour = (255, 0, 0), int waitForMs = 1); // ms was 50
 
+// ===============
+// HORIZONTAL SEAM
+// ===============
+std::vector<int> FindHorizontalSeamGreedy(cv::Mat const& energyMap);
+
+void RemoveHorizontalSeam(cv::Mat const& img, std::vector<int> const& seam);
+
+void SeamCarvingToHeight(cv::Mat& img, int targetHeight);
+
+void VisualizeHSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour = (255, 0, 0), int waitForMs = 1); // ms was 50
+
+void DrawBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 void DrawBoundary(cv::Mat& img, int pos, cv::Vec3b const& colour = (0, 0, 255));
 void DrawBoundaryH(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 

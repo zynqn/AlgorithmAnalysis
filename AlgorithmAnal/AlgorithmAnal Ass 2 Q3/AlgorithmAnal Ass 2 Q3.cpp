@@ -83,6 +83,9 @@ int main()
 
 		if (key == 'c')
 			SeamCarvingToWidth(imgClone, 500);
+
+		if (key == 'b')
+			SeamCarvingToHeight(imgClone, 400);
 			
 		else if (key == cv::ESC_KEY)
 			break;
