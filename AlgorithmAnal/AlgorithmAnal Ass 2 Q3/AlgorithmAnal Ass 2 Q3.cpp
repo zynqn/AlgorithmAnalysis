@@ -82,7 +82,7 @@ int main()
 		int key = cv::waitKey(0);
 
 		if (key == 'c')
-			SeamCarvingToWidth(imgClone, 500);
+			SeamCarvingToWidth(imgClone, 600);
 			
 		else if (key == cv::ESC_KEY)
 			break;

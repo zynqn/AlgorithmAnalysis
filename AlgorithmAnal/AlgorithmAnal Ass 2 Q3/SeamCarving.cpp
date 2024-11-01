@@ -284,7 +284,8 @@ void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth, bool isRemovingObject)
 		return;
 	}
 
-	std::vector<util::Mask> toRemove = GetBoundedArea({ 30, 0 }, { 150, 350 }); // area to remove
+	std::vector<util::Mask> toRemove = GetBoundedArea({ 30, 0 }, { 150, 350 }); // clock pic
+	//std::vector<util::Mask> toRemove = GetBoundedArea({ 639, 460 }, { 845, 604 }); // surfer pic
 
 	while (true)
 	{
