@@ -380,32 +380,32 @@ void RemoveVerticalSeam(cv::Mat& img, std::vector<int> const& seam)
 #endif
 }
 
-void RemoveHorizontalSeam(cv::Mat& img, std::vector<int> const& seam)
-{
-	int rows = img.rows;
-	int cols = img.cols;
-
-	//remove the seam from the image
-	for (int col{}; col < cols; ++col)
-	{
-		int seamRow = seam[col];
-		for (int row = seamRow; row < rows - 1; ++row)
-			img.at<cv::Vec3b>(row, col) = img.at<cv::Vec3b>(row + 1, col);
-
-	}
-
-	// resize the whole image 
-	img = img.rowRange(0, rows - 1);
-
-#if 0
-	for (int i{}; i < img.rows; ++i)
-	{
-		int col = seam[i];
-		img.row(i).colRange(0, col).copyTo(img.row(i).colRange(0, col));
-		img.row(i).colRange(col + 1, img.cols).copyTo(img.row(i).colRange(col, img.cols));
-	}
-#endif
-}
+//void RemoveHorizontalSeam(cv::Mat& img, std::vector<int> const& seam)
+//{
+//	int rows = img.rows;
+//	int cols = img.cols;
+//
+//	//remove the seam from the image
+//	for (int col{}; col < cols; ++col)
+//	{
+//		int seamRow = seam[col];
+//		for (int row = seamRow; row < rows - 1; ++row)
+//			img.at<cv::Vec3b>(row, col) = img.at<cv::Vec3b>(row + 1, col);
+//
+//	}
+//
+//	// resize the whole image 
+//	img = img.rowRange(0, rows - 1);
+//
+//#if 0
+//	for (int i{}; i < img.rows; ++i)
+//	{
+//		int col = seam[i];
+//		img.row(i).colRange(0, col).copyTo(img.row(i).colRange(0, col));
+//		img.row(i).colRange(col + 1, img.cols).copyTo(img.row(i).colRange(col, img.cols));
+//	}
+//#endif
+//}
 
 void RemoveHorizontalSeam(cv::Mat& img, std::vector<int> const& seam)
 {

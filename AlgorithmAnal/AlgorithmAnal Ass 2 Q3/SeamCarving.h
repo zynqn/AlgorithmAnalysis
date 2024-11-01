@@ -30,7 +30,7 @@ std::vector<int> FindVerticalSeamDP(cv::Mat &cumMap);
 std::vector<int> FindHorizontalSeamDP(cv::Mat& cumMap);
 
 void RemoveVerticalSeam(cv::Mat const& img, std::vector<int> const& seam);
-void RemoveHorizontalSeam(cv::Mat const& img, std::vector<int> const& seam);
+//void RemoveHorizontalSeam(cv::Mat const& img, std::vector<int> const& seam);
 
 // perform seam carving on the img to the specified target width
 void SeamCarvingToWidth(cv::Mat &img, int targetWidth);
@@ -52,7 +52,6 @@ void SeamCarvingToHeight(cv::Mat& img, int targetHeight);
 void VisualizeHSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour = (255, 0, 0), int waitForMs = 1); // ms was 50
 
 void DrawBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
-void DrawBoundary(cv::Mat& img, int pos, cv::Vec3b const& colour = (0, 0, 255));
 void DrawBoundaryH(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 
 #endif
