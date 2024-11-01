@@ -125,7 +125,7 @@ int main()
 		{
 			if (carveHeight > imgClone.rows)
 				imgClone = img.clone();
-			SeamCarvingToHeightDP(imgClone, carveHeight, true);
+			SeamCarvingToHeightDP(imgClone, carveHeight, false);
 		}
 
 		if (key == cv::ESC_KEY)
