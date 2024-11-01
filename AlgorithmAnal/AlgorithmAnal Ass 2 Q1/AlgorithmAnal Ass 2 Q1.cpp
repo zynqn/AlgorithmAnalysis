@@ -114,6 +114,7 @@ int main()
 	{
 		int key = cv::waitKey(0);
 
+		// using object removal
 		if (key == ' ')
 		{
 			if (carveWidth > imgClone.cols)

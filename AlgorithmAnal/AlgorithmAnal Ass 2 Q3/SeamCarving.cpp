@@ -503,7 +503,8 @@ void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth, bool isRemovingObject)
 		cv::Mat energyMap = CalculateEnergyMap(channels);
 		WRAP(util::EndProfile("Energy Map"));
 
-		ModifyEnergyMap(energyMap, toRemove, 0.0);
+		if (isRemovingObject)
+			ModifyEnergyMap(energyMap, toRemove, 0.0);
 		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
 
 		WRAP(util::BeginProfile());
@@ -554,7 +555,8 @@ void SeamCarvingToHeightDP(cv::Mat& img, int targetHeight, bool isRemovingObject
 		cv::Mat energyMap = CalculateEnergyMap(channels);
 		WRAP(util::EndProfile("Energy Map"));
 
-		//ModifyEnergyMapH(energyMap, toRemove, 0.0);
+		if (isRemovingObject)
+			ModifyEnergyMapH(energyMap, toRemove, 0.0);
 		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
 
 		WRAP(util::BeginProfile());
