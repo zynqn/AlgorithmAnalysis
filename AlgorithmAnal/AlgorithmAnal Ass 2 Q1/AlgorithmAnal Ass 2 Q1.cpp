@@ -14,10 +14,16 @@
 #include "utility.h"
 
 int carveWidth = 0;
+int carveHeight = 0;
 
 // idk why need to forward declare again
-void DrawBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 255, 0));
+void DrawBoundary(cv::Mat& img, int pos, cv::Vec3b const& colour = (0, 255, 0));
+void DrawBoundaryH(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 255, 0));
+
+
 void SeamCarvingToWidthDP(cv::Mat &img, int targetWidth, bool isRemovingObject = false);
+void SeamCarvingToHeightDP(cv::Mat& img, int targetHeight, bool isRemovingObject = false);
+
 cv::Mat CalculateCumMap(const cv::Mat &energyMap);
 
 void callback(int pos, void *userData)
@@ -25,6 +31,13 @@ void callback(int pos, void *userData)
 	carveWidth = pos;
 	cv::Mat imgClone = static_cast<cv::Mat *>(userData)->clone();
 	DrawBoundary(imgClone, pos);
+}
+
+void callbackH(int pos, void* userData)
+{
+	carveHeight = pos;
+	cv::Mat imgClone = static_cast<cv::Mat*>(userData)->clone();
+	DrawBoundaryH(imgClone, pos);
 }
 
 int main()
@@ -89,6 +102,7 @@ int main()
 	cv::imshow("Input", img);
 	cv::putText(img, "Press 'space' to start carving!", { 10, 30 }, cv::FONT_HERSHEY_SIMPLEX, 0.5, { 255, 255, 255 });
 	cv::createTrackbar("Width", "Input", nullptr, img.cols, callback, &img);
+	cv::createTrackbar("Height", "Input", nullptr, img.rows, callbackH, &img);
 	cv::imshow("Output", imgClone);
 	cv::imshow("Object Removal", displayCumMap);
 
@@ -105,6 +119,13 @@ int main()
 			if (carveWidth > imgClone.cols)
 				imgClone = img.clone();
 			SeamCarvingToWidthDP(imgClone, carveWidth, true);
+		}
+
+		if (key == '1')
+		{
+			if (carveHeight > imgClone.rows)
+				imgClone = img.clone();
+			SeamCarvingToHeightDP(imgClone, carveHeight, false);
 		}
 
 		if (key == cv::ESC_KEY)
