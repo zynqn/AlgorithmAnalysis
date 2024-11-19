@@ -71,11 +71,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\maxflow;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\python\libs;$(SolutionDir)lib\maxflow;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\maxflow;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\maxflow;$(SolutionDir)lib\python\libs</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

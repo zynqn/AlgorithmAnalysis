@@ -16,7 +16,7 @@
 #include "matplotlibcpp.h"
 
 // maxflow for graph cut
-#include "maxflow/graph.h"
+#include "graph.h"
 
 namespace plt = matplotlibcpp;
 
