@@ -150,6 +150,12 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmAnal Ass 2 Q2.cpp" />
+    <ClCompile Include="SeamCarving2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="matplotlibcpp.h" />
+    <ClInclude Include="SeamCarving2.h" />
+    <ClInclude Include="Utility2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

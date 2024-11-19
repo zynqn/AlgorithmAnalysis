@@ -18,5 +18,19 @@
     <ClCompile Include="AlgorithmAnal Ass 2 Q2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SeamCarving2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="matplotlibcpp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SeamCarving2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
