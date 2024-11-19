@@ -9,6 +9,13 @@
 
 #include "Utility2.h"
 
+// plot graph
+#include "matplotlibcpp.h"
+
+// maxflow graph (for cut graph)
+#include "graph.h"
+
+
 // =============
 // OBJECT REMOVAL
 // =============
@@ -37,13 +44,14 @@ cv::Mat CalculateHorizontalCumMap(const cv::Mat &energyMap);
 // - start from top row. At each pixel, choose the pixel with the least energy from the row below (directly under or one pixel to the left/right)
 std::vector<int> FindVerticalSeamGreedy(cv::Mat const &energyMap);
 std::vector<int> FindVerticalSeamDP(cv::Mat &cumMap);
-std::vector<int> FindVerticalSeamCutGraph(cv::Mat const& energyMap);
+std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap);
 
 void RemoveVerticalSeam(cv::Mat &img, std::vector<int> const &seam);
 
 // perform seam carving on the img to the specified target width
 void VerticalSeamCarvingGreedy(cv::Mat &img, int targetWidth);
 void VerticalSeamCarvingDP(cv::Mat &img, int targetWidth);
+void VerticalSeamCarvingGraphCut(cv::Mat& img, int targetWidth);
 
 // ===============
 // SEAM CARVING - HORIZONTAL
