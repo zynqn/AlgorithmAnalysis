@@ -74,12 +74,12 @@ int main()
 	cv::Mat imgClone = img.clone();
 	cv::Mat originalImg = img.clone();
 
-	editor.Init();
+	//editor.Init();
 
 	// game loop
 	while (true)
 	{
-		editor.Update();
+		//editor.Update();
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
 		int key = cv::waitKey(1);
 
@@ -106,6 +106,6 @@ int main()
 
 	ShowCursor(TRUE);
 
-	editor.Shutdown();
+	//editor.Shutdown();
 	cv::destroyAllWindows();
 }
