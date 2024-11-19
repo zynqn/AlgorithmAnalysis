@@ -113,8 +113,8 @@ int main()
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
 	cv::setMouseCallback("Output", util::mouseCallback, &imgClone);
 	// graph
-	//plt::plot({ 1,3,2,4 });
-	//plt::show();
+	plt::plot({ 1,3,2,4 });
+	plt::show();
 	// game loop
 	while (true)
 	{

@@ -26,7 +26,7 @@
 *.a
 
 # Executables
-*.exe
+# *.exe
 *.out
 *.app
 
@@ -100,3 +100,4 @@ Generated\ Files/
 #Folder to not ignore
 !AlgorithmAnal/AlgorithmAnal/lib/opencv/bin
 !AlgorithmAnal/lib/opencv/bin
+!AlgorithmAnal/lib/
