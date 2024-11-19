@@ -26,7 +26,7 @@
 *.a
 
 # Executables
-# *.exe
+*.exe
 *.out
 *.app
 
@@ -101,3 +101,4 @@ Generated\ Files/
 !AlgorithmAnal/AlgorithmAnal/lib/opencv/bin
 !AlgorithmAnal/lib/opencv/bin
 !AlgorithmAnal/lib/
+!AlgorithmAnal/lib/imgui

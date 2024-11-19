@@ -14,6 +14,7 @@ std::vector<util::Mask> GetBoundedArea(cv::Point2i start, cv::Point2i end);
 cv::Mat CalculateEnergyMap(std::vector<cv::Mat> const& channels);
 
 void ModifyEnergyMap(cv::Mat& energyMap, const std::vector<util::Mask>& area, double setTo = 0.0);
+
 void ModifyEnergyMapH(cv::Mat &energyMap, const std::vector<util::Mask> &area, double setTo = 0.0);
 
 cv::Mat CalculateCumMap(const cv::Mat& energyMap);

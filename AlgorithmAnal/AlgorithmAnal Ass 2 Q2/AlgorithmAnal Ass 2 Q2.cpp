@@ -13,6 +13,10 @@
 #include "SeamCarving2.h"
 #include "Utility2.h"
 
+// maxflow graph (for cut graph)
+#include "graph.h"
+
+
 int main()
 {
 	ShowCursor(FALSE);
