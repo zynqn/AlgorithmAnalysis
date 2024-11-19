@@ -13,12 +13,6 @@
 #include "SeamCarving2.h"
 #include "Utility2.h"
 
-//using namespace cv;
-cv::Mat brushMask;
-bool isDrawing = false;
-int brushSize = 10;
-bool maskInitialized = false;
-
 int main()
 {
 	// ==============
@@ -26,7 +20,7 @@ int main()
 	// ==============
 
 	// load the image
-	cv::Mat img = cv::imread("assets/rushmore.jpg");
+	cv::Mat img = cv::imread("assets/surfer.jpg");
 
 	// ensure image loaded properly
 	if (img.empty())
@@ -39,13 +33,14 @@ int main()
 	// SET THE WINDOWS
 	// ===============
 
-	cv::namedWindow("Original Image", cv::WINDOW_AUTOSIZE);
+	cv::namedWindow(ORIGINAL_IMAGE, cv::WINDOW_NORMAL);
+	cv::setWindowProperty(ORIGINAL_IMAGE, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
 
 	brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
 	maskInitialized = true;
 
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
-	cv::setMouseCallback("Original Image", util::mouseCallback, &img);
+	cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &img);
 
 	// =======================
 	// GET ORIGINAL ENERGY MAP
@@ -69,8 +64,8 @@ int main()
 	// DISPLAY THE WINDOWS
 	// ===================
 
-	cv::imshow("Original Image", img);
-	cv::moveWindow("Original Image", 0, 45);
+	resolution = static_cast<float>(rows) / static_cast<float>(cols);
+	cv::imshow(ORIGINAL_IMAGE, img);
 
 	// clone the original image for the seam carving
 	cv::Mat imgClone = img.clone();
@@ -79,6 +74,7 @@ int main()
 	// game loop
 	while (true)
 	{
+		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
 		int key = cv::waitKey(1);
 
 		if (key == 'c')
@@ -90,13 +86,13 @@ int main()
 		if (key == 'd')
 		{
 			ContentAwareRemoval(imgClone);
-			cv::imshow("Original Image", imgClone);
+			cv::imshow(ORIGINAL_IMAGE, imgClone);
 		}
 		else if (key == 'r')
 		{
 			imgClone = originalImg.clone();
 			brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
-			cv::imshow("Original Image", imgClone);
+			cv::imshow(ORIGINAL_IMAGE, imgClone);
 		}
 		else if (key == cv::ESC_KEY)
 			break;

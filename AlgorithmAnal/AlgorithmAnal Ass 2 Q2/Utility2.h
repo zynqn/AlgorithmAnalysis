@@ -9,12 +9,17 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
+#include <Windows.h>
 
 #include <chrono>
 
 #undef MAX
+#undef max
+#undef min
+
 #define nl '\n'
 #define NOW std::chrono::system_clock::now()
+
 constexpr double MAX = std::numeric_limits<double>::max(); // MAX was 255
 constexpr double MIN = -2000.0;
 constexpr int THRESHOLD = 8;
@@ -25,10 +30,17 @@ constexpr int THRESHOLD = 8;
 #define WRAP(x)
 #endif
 
-extern cv::Mat brushMask;  // Declaration
-extern bool isDrawing;
-extern int brushSize;
-extern bool maskInitialized;
+// global variables
+inline cv::Mat brushMask;
+inline bool isDrawing = false;
+inline int brushSize = 10;
+inline bool maskInitialized = false;
+inline float scale = 1000.f;
+inline float resolution = 1.f; // height/width or rows/cols of image (ie for landscape images this will be < 1.f)
+
+// global constants
+inline const std::string ORIGINAL_IMAGE = "Original Image";
+inline const std::wstring ORIGINAL_IMAGE_W = L"Original Image";
 
 // global variables
 namespace
@@ -46,6 +58,14 @@ namespace cv
 
 namespace util
 {
+	inline void LockWindow(const std::wstring &windowName, int x, int y, int width, int height) 
+	{
+		HWND hwnd = FindWindow(nullptr, windowName.c_str()); // Find OpenCV window handle
+		if (hwnd)
+			// Fix window size and position
+			SetWindowPos(hwnd, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+	}
+
 	inline void initializeBrushMask(const cv::Mat &img)
 	{
 		if (!maskInitialized)
@@ -68,7 +88,7 @@ namespace util
 		cv::Mat displayImg = img.clone();
 		displayImg.setTo(cv::Scalar(0, 0, 255), brushMask);
 		cv::addWeighted(displayImg, 1.0, img, 0.0, 0, displayImg);
-		cv::imshow("Original Image", displayImg);
+		cv::imshow(ORIGINAL_IMAGE, displayImg);
 	}
 
 	struct Mask
