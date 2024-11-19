@@ -15,6 +15,9 @@
 // graph
 #include "matplotlibcpp.h"
 
+// maxflow for graph cut
+#include "maxflow/graph.h"
+
 namespace plt = matplotlibcpp;
 
 cv::Mat brushMask;
