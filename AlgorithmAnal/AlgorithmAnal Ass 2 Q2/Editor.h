@@ -1,8 +1,10 @@
-#include "Utility2.h"
+#include <string>
+#include <unordered_map>
+#include <memory>
 
 /*! ------------ Editor Windows ------------ */
 
-namespace editor
+namespace edit
 {
 
 	class EditorWindow
@@ -28,6 +30,17 @@ namespace editor
 		bool IsToggleable();
 	};
 
+	class Inspector : public EditorWindow
+	{
+	public:
+
+		Inspector(const std::string &_name = "", bool _isToggleable = true);
+
+		void OnEnter() override;
+		void OnUpdate() override;
+		void OnExit() override;
+	};
+
 	/*! ------------ Editor Windows Manager ------------ */
 
 	class Editor
@@ -50,8 +63,6 @@ namespace editor
 		void AddWindow(bool shldOpen, bool isToggleable)
 		{
 			std::string name = typeid(T).name();
-			name = util::ToCapitalCase(util::TrimString(name, "::", false));
-
 			windows[name] = std::make_unique<T>(name, isToggleable);
 			if (shldOpen)
 				OpenWindow(name);
@@ -61,7 +72,6 @@ namespace editor
 		T *GetWindow()
 		{
 			std::string name = typeid(T).name();
-			name = util::ToCapitalCase(util::TrimString(name, "::", false));
 			return dynamic_cast<T *>(windows.at(name).get());
 		}
 	};
