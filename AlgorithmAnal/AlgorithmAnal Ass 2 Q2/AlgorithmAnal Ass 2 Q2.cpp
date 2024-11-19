@@ -18,7 +18,7 @@
 
 int main()
 {
-	ShowCursor(FALSE);
+	//ShowCursor(FALSE);
 
 	// ==============
 	// LOAD THE IMAGE
@@ -106,7 +106,7 @@ int main()
 			break;
 	}
 
-	ShowCursor(TRUE);
+	//ShowCursor(TRUE);
 
 	//editor.Shutdown();
 	cv::destroyAllWindows();
