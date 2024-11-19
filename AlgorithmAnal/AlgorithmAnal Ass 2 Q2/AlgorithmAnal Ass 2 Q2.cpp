@@ -84,7 +84,7 @@ int main()
 		int key = cv::waitKey(1);
 
 		if (key == 'c')
-			VerticalSeamCarvingDP(imgClone, 500);
+			VerticalSeamCarvingGraphCut(imgClone, 500);
 
 		if (key == 'b')
 			HorizontalSeamCarvingDP(imgClone, 400);
