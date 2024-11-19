@@ -15,6 +15,8 @@
 
 int main()
 {
+	ShowCursor(FALSE);
+
 	// ==============
 	// LOAD THE IMAGE
 	// ==============
@@ -97,6 +99,8 @@ int main()
 		else if (key == cv::ESC_KEY)
 			break;
 	}
+
+	ShowCursor(TRUE);
 
 	cv::destroyAllWindows();
 }
