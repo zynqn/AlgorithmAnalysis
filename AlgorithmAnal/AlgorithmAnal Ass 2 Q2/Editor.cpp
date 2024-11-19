@@ -94,8 +94,8 @@ namespace editor
 		SetPixelFormat(hdc, pixelFormat, &pfd);
 
 		// Create OpenGL rendering context
-		//HGLRC hglrc = wglCreateContext(hdc);
-		//wglMakeCurrent(hdc, hglrc);
+		HGLRC hglrc = wglCreateContext(hdc);
+		wglMakeCurrent(hdc, hglrc);
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
