@@ -25,7 +25,7 @@ constexpr int THRESHOLD = 8;
 #define WRAP(x)
 #endif
 
-cv::Mat brushMask;  // Declaration hi
+extern cv::Mat brushMask;  // Declaration hi
 extern bool isDrawing;
 extern int brushSize;
 extern bool maskInitialized;
