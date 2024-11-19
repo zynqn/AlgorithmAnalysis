@@ -292,6 +292,9 @@ bool ModifyMask(std::vector<util::Mask> &area, const std::vector<int> &seam)
 			isMaskGone = false;
 	}
 
+	// Remove empty masks
+	area.erase(std::remove_if(area.begin(), area.end(), [](const util::Mask& m) { return m.size <= 0; }), area.end());
+
 	return isMaskGone;
 }
 
@@ -646,4 +649,54 @@ void DrawBoundaryH(cv::Mat& img, int pos, cv::Vec3b const& colour)
 		img.at<cv::Vec3b>(pos, i) = colour;
 
 	cv::imshow("Input", img);
+}
+
+void ContentAwareRemoval(cv::Mat& img) 
+{
+	if (brushMask.empty() || cv::countNonZero(brushMask) == 0) 
+	{
+		return;
+	}
+
+	std::vector<util::Mask> toRemove;
+	for (int y = 0; y < brushMask.rows; ++y) 
+	{
+		int start = -1;
+		int end = -1;
+
+		uchar* row = brushMask.ptr<uchar>(y);
+		for (int x = 0; x < brushMask.cols; ++x) 
+		{
+			if (row[x] > 0) 
+			{
+				if (start == -1) start = x;
+				end = x;
+			}
+		}
+
+		if (start != -1 && end != -1) 
+			toRemove.push_back({ start, end - start + 1, y });
+	}
+
+	while (!toRemove.empty()) 
+	{
+		std::vector<cv::Mat> channels;
+		cv::split(img, channels);
+		cv::Mat energyMap = CalculateEnergyMap(channels);
+		ModifyEnergyMap(energyMap, toRemove, MIN);
+
+		cv::Mat cumMap = CalculateCumMap(energyMap);
+		std::vector<int> seam = FindVerticalSeamDP(cumMap);
+
+		VisualizeSeam(img, seam, cv::Vec3b(0, 0, 255));
+
+		RemoveVerticalSeam(img, seam);
+		
+		if (ModifyMask(toRemove, seam)) 
+		{
+			break; 
+		}
+	}
+
+	brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
 }

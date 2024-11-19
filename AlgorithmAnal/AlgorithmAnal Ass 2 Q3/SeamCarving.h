@@ -54,4 +54,5 @@ void VisualizeHSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const&
 void DrawBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 void DrawBoundaryH(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 
+void ContentAwareRemoval(cv::Mat& img);
 #endif

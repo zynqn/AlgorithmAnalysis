@@ -14,7 +14,10 @@
 #include "utility.h"
 
 //using namespace cv;
-
+cv::Mat brushMask;
+bool isDrawing = false;
+int brushSize = 10;
+bool maskInitialized = false;
 int main()
 {
 	// ==============
@@ -22,7 +25,7 @@ int main()
 	// ==============
 	
 	// load the image
-	cv::Mat img = cv::imread("assets/clock.png");
+	cv::Mat img = cv::imread("assets/test3.png");
 
 	// ensure image loaded properly
 	if (img.empty())
@@ -37,6 +40,9 @@ int main()
 
 	cv::namedWindow("Original Image", cv::WINDOW_AUTOSIZE);
 	cv::namedWindow("Original Energy Map", cv::WINDOW_AUTOSIZE);
+
+	brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
+	maskInitialized = true;
 
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
 	cv::setMouseCallback("Original Image", util::mouseCallback, &img);
@@ -75,23 +81,35 @@ int main()
 
 	// clone the original image for the seam carving
 	cv::Mat imgClone = img.clone();
+	cv::Mat originalImg = img.clone(); 
 
 	// game loop
-	while (true)
+	while (true) 
 	{
-		int key = cv::waitKey(0);
+		int key = cv::waitKey(1);
 
 		if (key == 'c')
 			SeamCarvingToWidth(imgClone, 500);
 
 		if (key == 'b')
 			SeamCarvingToHeight(imgClone, 400);
-			
+
+		if (key == 'd') 
+		{
+			ContentAwareRemoval(imgClone);
+			cv::imshow("Original Image", imgClone);
+		}
+		else if (key == 'r') 
+		{
+			imgClone = originalImg.clone();
+			brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
+			cv::imshow("Original Image", imgClone);
+		}
 		else if (key == cv::ESC_KEY)
 			break;
 	}
-
 	
+
 
 	cv::destroyAllWindows();
 
