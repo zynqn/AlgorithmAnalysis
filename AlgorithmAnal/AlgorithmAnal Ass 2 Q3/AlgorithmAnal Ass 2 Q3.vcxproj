@@ -155,6 +155,7 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
     <ClCompile Include="SeamCarving.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="matplotlibcpp.h" />
     <ClInclude Include="SeamCarving.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
