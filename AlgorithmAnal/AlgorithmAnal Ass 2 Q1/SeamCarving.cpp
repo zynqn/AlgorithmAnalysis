@@ -5,6 +5,10 @@
 #include <iomanip>
 #include <iostream>
 
+#include "matplotlibcpp.h"
+
+namespace plt = matplotlibcpp;
+
 
 
 std::vector<util::Mask> GetBoundedArea(cv::Point2i start, cv::Point2i end)
@@ -495,6 +499,10 @@ void SeamCarvingToWidthDP(cv::Mat& img, int targetWidth, bool isRemovingObject)
 
 	while (true)
 	{
+
+
+		
+
 		std::vector<cv::Mat> channels;
 
 		WRAP(util::BeginProfile());
