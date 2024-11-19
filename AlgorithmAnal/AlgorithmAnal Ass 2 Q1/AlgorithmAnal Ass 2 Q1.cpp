@@ -129,7 +129,7 @@ int main()
 		if (key == ' ')
 		{
 			if (carveWidth > imgClone.cols)
-				imgClone = img.clone();
+				imgClone = img.clone(); 
 			SeamCarvingToWidthDP(imgClone, carveWidth, true);
 
 		}
