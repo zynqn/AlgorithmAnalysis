@@ -72,9 +72,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -154,6 +159,7 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
   <ItemGroup>
     <ClInclude Include="..\AlgorithmAnal Ass 2 Q3\SeamCarving.h" />
     <ClInclude Include="..\AlgorithmAnal Ass 2 Q3\Utility.h" />
+    <ClInclude Include="matplotlibcpp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

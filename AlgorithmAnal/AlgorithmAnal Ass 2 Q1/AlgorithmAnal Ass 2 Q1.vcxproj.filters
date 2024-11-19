@@ -29,5 +29,8 @@
     <ClInclude Include="..\AlgorithmAnal Ass 2 Q3\Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="matplotlibcpp.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

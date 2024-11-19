@@ -13,6 +13,12 @@
 #include "SeamCarving.h"
 #include "utility.h"
 
+
+// graph
+#include "matplotlibcpp.h"
+
+namespace plt = matplotlibcpp;
+
 int carveWidth = 0;
 int carveHeight = 0;
 
@@ -55,6 +61,9 @@ int main()
 		std::cerr << "Error: Could not load image.\n";
 		return -1;
 	}
+
+	
+
 
 	// ===============
 	// SET THE WINDOWS
@@ -108,7 +117,9 @@ int main()
 
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
 	cv::setMouseCallback("Output", util::mouseCallback, &imgClone);
-
+	// graph
+	plt::plot({ 1,3,2,4 });
+	plt::show();
 	// game loop
 	while (true)
 	{
