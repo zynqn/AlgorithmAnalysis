@@ -40,6 +40,8 @@ void callbackH(int pos, void* userData)
 	cv::Mat imgClone = static_cast<cv::Mat*>(userData)->clone();
 	DrawBoundaryH(imgClone, pos);
 }
+#if 0
+#pragma region MyRegion
 
 int main()
 {
@@ -57,7 +59,7 @@ int main()
 		return -1;
 	}
 
-	
+
 
 
 	// ===============
@@ -113,11 +115,14 @@ int main()
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
 	cv::setMouseCallback("Output", util::mouseCallback, &imgClone);
 	// graph
-	plt::plot({ 1,3,2,4 });
-	plt::show();
+	/*plt::plot({ 1,3,2,4 });
+	plt::show();*/
 	// game loop
 	while (true)
 	{
+		plt::ion();
+		plt::plot({ 1,3,2,4 });
+		plt::show();
 		int key = cv::waitKey(0);
 
 		// using object removal
@@ -126,6 +131,7 @@ int main()
 			if (carveWidth > imgClone.cols)
 				imgClone = img.clone(); 
 			SeamCarvingToWidthDP(imgClone, carveWidth, true);
+
 		}
 
 		if (key == '1')
@@ -133,14 +139,42 @@ int main()
 			if (carveHeight > imgClone.rows)
 				imgClone = img.clone();
 			SeamCarvingToHeightDP(imgClone, carveHeight, false);
+
 		}
 
 		if (key == cv::ESC_KEY)
 			break;
+
+
 	}
 
 	cv::waitKey(0);
 	cv::destroyAllWindows();
 
 	return 0;
+}
+
+
+#pragma endregion
+#endif
+
+
+
+int main()
+{
+	std::vector<std::vector<double>> x, y, z;
+	for (double i = -5; i <= 5; i += 0.25) {
+		std::vector<double> x_row, y_row, z_row;
+		for (double j = -5; j <= 5; j += 0.25) {
+			x_row.push_back(i);
+			y_row.push_back(j);
+			z_row.push_back(::std::sin(::std::hypot(i, j)));
+		}
+		x.push_back(x_row);
+		y.push_back(y_row);
+		z.push_back(z_row);
+	}
+
+	plt::plot_surface(x, y, z);
+	plt::show();
 }
