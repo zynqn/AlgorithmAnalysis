@@ -18,6 +18,7 @@ cv::Mat brushMask;
 bool isDrawing = false;
 int brushSize = 10;
 bool maskInitialized = false;
+
 int main()
 {
 	// ==============

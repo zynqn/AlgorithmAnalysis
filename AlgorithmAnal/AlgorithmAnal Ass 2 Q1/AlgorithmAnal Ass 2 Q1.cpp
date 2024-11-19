@@ -22,15 +22,10 @@ namespace plt = matplotlibcpp;
 int carveWidth = 0;
 int carveHeight = 0;
 
-// idk why need to forward declare again
-void DrawBoundary(cv::Mat& img, int pos, cv::Vec3b const& colour = (0, 255, 0));
-void DrawBoundaryH(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 255, 0));
-
-
-void SeamCarvingToWidthDP(cv::Mat &img, int targetWidth, bool isRemovingObject = false);
-void SeamCarvingToHeightDP(cv::Mat& img, int targetHeight, bool isRemovingObject = false);
-
-cv::Mat CalculateCumMap(const cv::Mat &energyMap);
+cv::Mat brushMask;
+bool isDrawing = false;
+int brushSize = 10;
+bool maskInitialized = false;
 
 void callback(int pos, void *userData)
 {
@@ -118,8 +113,8 @@ int main()
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
 	cv::setMouseCallback("Output", util::mouseCallback, &imgClone);
 	// graph
-	plt::plot({ 1,3,2,4 });
-	plt::show();
+	//plt::plot({ 1,3,2,4 });
+	//plt::show();
 	// game loop
 	while (true)
 	{
