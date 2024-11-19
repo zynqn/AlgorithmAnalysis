@@ -4,6 +4,7 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
+#include "graph.cpp"
 
 // =============
 // OBJECT REMOVAL
