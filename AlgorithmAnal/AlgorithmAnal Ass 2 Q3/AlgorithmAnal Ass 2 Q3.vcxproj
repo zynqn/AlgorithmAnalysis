@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\imgui\backends;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\maxflow;$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\imgui\backends;$(SolutionDir)lib\maxflow;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\imgui\backends;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\maxflow;$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\imgui\backends;$(SolutionDir)lib\maxflow;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -108,7 +108,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -129,7 +129,7 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100d.dll" "$(TargetDir)" /Y</Co
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -155,6 +155,7 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
     <ClCompile Include="SeamCarving.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="matplotlibcpp.h" />
     <ClInclude Include="SeamCarving.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>

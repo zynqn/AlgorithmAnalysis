@@ -129,9 +129,9 @@ namespace util
 		return img(roi).clone();  // Return the zoomed image
 	}
 
-	inline void mouseCallback(int event, int x, int y, int flags, void *data)
+	inline void mouseCallback(int event, int x, int y, int flags, void* data)
 	{
-		cv::Mat *img = (cv::Mat *)data;
+		cv::Mat* img = (cv::Mat*)data;
 
 		if (!maskInitialized || brushMask.empty())
 			initializeBrushMask(*img);
@@ -139,23 +139,36 @@ namespace util
 		if (brushMask.size() != img->size())
 			brushMask = cv::Mat::zeros(img->size(), CV_8UC1);
 
+		// Create display image 
+		static cv::Mat displayImg;  // Make static to avoid repeated allocations
+		img->copyTo(displayImg);
+
+		// Apply solid red mask
+		displayImg.setTo(cv::Scalar(0, 0, 255), brushMask);
+
+		// Draw the green circular crosshair
+		cv::circle(displayImg, cv::Point(x, y), brushSize, cv::Scalar(0, 255, 0), -1);
+
 		switch (event)
 		{
 		case cv::EVENT_LBUTTONDOWN:
 			isDrawing = true;
-			drawBrush(*img, cv::Point(x, y));
+			cv::circle(brushMask, cv::Point(x, y), brushSize, cv::Scalar(255), -1);
 			break;
 
 		case cv::EVENT_MOUSEMOVE:
-			if (isDrawing)
-				drawBrush(*img, cv::Point(x, y));
+			if (isDrawing) 
+			{
+				cv::circle(brushMask, cv::Point(x, y), brushSize, cv::Scalar(255), -1);
+			}
 			break;
 
 		case cv::EVENT_LBUTTONUP:
 			isDrawing = false;
 			break;
-
 		}
+
+		cv::imshow(ORIGINAL_IMAGE, displayImg);
 	}
 
 	/*! ------------ String Manipulation ------------ */
