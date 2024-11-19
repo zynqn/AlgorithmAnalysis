@@ -19,6 +19,7 @@
 
 #define nl '\n'
 #define NOW std::chrono::system_clock::now()
+#define WHITESPACE " \n\t\r\v\f"
 
 constexpr double MAX = std::numeric_limits<double>::max(); // MAX was 255
 constexpr double MIN = -2000.0;
@@ -58,6 +59,7 @@ namespace cv
 
 namespace util
 {
+
 	inline void LockWindow(const std::wstring &windowName, int x, int y, int width, int height) 
 	{
 		HWND hwnd = FindWindow(nullptr, windowName.c_str()); // Find OpenCV window handle
@@ -153,6 +155,77 @@ namespace util
 
 		}
 	}
+
+	/*! ------------ String Manipulation ------------ */
+
+		// assume str is in pascal or camel case
+		// second param determines whether to set non-first capital letters to lower case
+	inline std::string ToCapitalCase(std::string str, bool shldUncapitalize = false)
+	{
+		if (str.empty())
+			return str;
+		str[0] = static_cast<char>(std::toupper(str[0]));
+
+		for (size_t i = 1; i < str.size(); ++i)
+			if (std::isupper(str[i]))
+			{
+				if (shldUncapitalize)
+					str[i] = static_cast<char>(std::tolower(str[i]));
+				str.insert(str.begin() + i++, ' ');
+			}
+		return str;
+	}
+
+	inline std::string ToLowerCase(std::string str)
+	{
+		std::for_each(str.begin(), str.end(), [](auto &elem) { elem = static_cast<char>(std::tolower(static_cast<unsigned char>(elem))); });
+		return str;
+	}
+
+	inline std::string Quote(std::string const &str, char delim = '"')
+	{
+		std::ostringstream oss;
+		oss << std::quoted(str, delim);
+		return oss.str();
+	}
+
+	// Helper function to split variable names
+	inline std::vector<std::string> SplitString(const std::string &toSplit, char delim = ' ')
+	{
+		std::string word;
+		std::istringstream line(toSplit);
+		std::vector<std::string> words;
+
+		while (std::getline(line, word, delim))
+			words.push_back(word);
+		return words;
+	}
+
+	inline std::string TrimString(std::string toTrim)
+	{
+		size_t pos = toTrim.find_first_not_of(WHITESPACE);
+		if (pos != std::string::npos)
+			toTrim = toTrim.substr(pos);
+		pos = toTrim.find_last_not_of(WHITESPACE);
+		if (pos != std::string::npos)
+			toTrim = toTrim.substr(0, pos + 1);
+		return toTrim;
+	}
+
+	// warning: no error checking
+	inline std::string TrimString(std::string toTrim, const std::string &toFind, bool findFromTheFront = true, bool cropFromTheFront = true)
+	{
+		size_t pos = findFromTheFront ? toTrim.find(toFind) : toTrim.rfind(toFind);
+		if (pos == std::string::npos)
+			return toTrim;
+
+		if (cropFromTheFront)
+			toTrim = toTrim.substr(pos + toFind.length());
+		else
+			toTrim = toTrim.substr(0, pos);
+		return toTrim;
+	}
+
 }
 
 #endif
