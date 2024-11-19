@@ -5,6 +5,10 @@
 #include <iomanip>
 #include <iostream>
 
+// maxflow graph (for cut graph)
+#include "graph.h"
+#include "graph.cpp"
+
 // =============
 // OBJECT REMOVAL
 // =============
@@ -265,7 +269,7 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 	int cols = energyMap.cols;
 
 	// graph with nodes (rows * cols : no. of nodes) (row - 1) * cols * 3 : no. edges 
-	maxflow::Graph<int, int, int> graph(rows * cols, (rows - 1) * cols * 3);
+	maxflow::Graph<float, float, float> graph(rows * cols, (rows - 1) * cols * 3);
 
 	// add node (1 pixel is 1 video)
 	for (int i{}; i < rows * cols; ++i)
@@ -275,7 +279,7 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 	for (int i{}; i < cols; ++i)
 	{
 		// connect first row to the source with its energy values 
-		graph.add_tweights(i, energyMap.at<float>(0, i), 0);
+		graph.add_tweights(i, static_cast<float>(energyMap.at<double>(0, i)), 0);
 
 		// connect last row to sink with zero weights
 		graph.add_tweights((rows - 1) * cols + i, 0, INT_MAX);
@@ -288,7 +292,7 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 		for (int col{}; col < cols; ++col)
 		{
 			int currNode = row * cols + col;
-			float edgeWeight = energyMap.at<float>(row + 1, col);
+			float edgeWeight = static_cast<float>(energyMap.at<double>(row + 1, col));
 
 			// vertical edge
 			graph.add_edge(currNode, (row + 1) * cols + col, edgeWeight, edgeWeight);
@@ -305,6 +309,8 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 
 	// find minimum cut
 	float flow = graph.maxflow();
+
+	std::cout << "flow: " << flow << '\n';
 
 	std::vector<int> seam(rows);
 
