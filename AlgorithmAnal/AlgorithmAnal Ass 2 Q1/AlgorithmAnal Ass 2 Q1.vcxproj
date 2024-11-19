@@ -73,12 +73,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\imgui\backends;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\imgui\backends;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
