@@ -143,7 +143,7 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100d.dll" "$(TargetDir)" /Y</Co
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)lib\opencv\lib;$(SolutionDir)lib\opengl</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world4100.lib;%(AdditionalDependencies);OpenGL32.Lib</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world4100.lib;%(AdditionalDependencies);OpenGL32.Lib;Gdi32.lib;User32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)assets\*" "$(targetdir)assets" /s /r /y /q /I

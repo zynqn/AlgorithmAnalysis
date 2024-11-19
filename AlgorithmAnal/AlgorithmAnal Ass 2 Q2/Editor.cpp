@@ -1,6 +1,8 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_opengl3.h"
+#include "Windows.h"
+#include "gl/GL.h"
 
 #include "Editor.h"
 
@@ -21,7 +23,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-namespace editor
+namespace edit
 {
 
 	EditorWindow::EditorWindow(const std::string &_name, bool _isToggleable)
@@ -54,6 +56,32 @@ namespace editor
 	bool EditorWindow::IsToggleable()
 	{
 		return isToggleable;
+	}
+
+	Inspector::Inspector(const std::string &_name, bool _isToggleable)
+		: EditorWindow(_name, _isToggleable)
+	{
+
+	}
+
+	void Inspector::OnEnter()
+	{
+
+	}
+
+	void Inspector::OnUpdate()
+	{
+		ImGui::Begin(name.c_str());
+
+		//std::cout << "hello\n";
+		ImGui::Text("hi");
+
+		ImGui::End();
+	}
+
+	void Inspector::OnExit()
+	{
+
 	}
 
 	void Editor::Init()
@@ -104,6 +132,8 @@ namespace editor
 
 		ImGui_ImplWin32_Init(hwnd);
 		ImGui_ImplOpenGL3_Init("#version 330 core");
+
+		AddWindow<Inspector>(true, true);
 	}
 
 	void Editor::Shutdown()
