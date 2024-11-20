@@ -176,6 +176,7 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
     <ClInclude Include="..\lib\imgui\imstb_textedit.h" />
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
     <ClInclude Include="Editor.h" />
+    <ClInclude Include="IconsFontAwesome5.h" />
     <ClInclude Include="matplotlibcpp.h" />
     <ClInclude Include="SeamCarving2.h" />
     <ClInclude Include="Utility2.h" />

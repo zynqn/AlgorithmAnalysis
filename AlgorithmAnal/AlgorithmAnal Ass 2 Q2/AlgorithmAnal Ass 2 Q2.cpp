@@ -12,9 +12,11 @@
 // seam carving
 #include "SeamCarving2.h"
 #include "Utility2.h"
-
+#include "Editor.h"
 
 #include <Windows.h>
+
+edit::Editor editor;
 
 int main()
 {
@@ -25,7 +27,7 @@ int main()
 	// ==============
 
 	// load the image
-	cv::Mat img = cv::imread("assets/surfer.jpg");
+	cv::Mat img = cv::imread("assets/images/clock.png");
 
 	// ensure image loaded properly
 	if (img.empty())
@@ -76,14 +78,20 @@ int main()
 	cv::Mat imgClone = img.clone();
 	cv::Mat originalImg = img.clone();
 
-	//editor.Init();
+	editor.Init();
 
 	// game loop
 	while (true)
 	{
-		//editor.Update();
-		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
+		editor.Update();
+		//util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
 		int key = cv::waitKey(1);
+
+		if (key == 'h')
+			HorizontalSeamCarvingGreedy(imgClone, 500);
+
+		if (key == 'g')
+			VerticalSeamCarvingGreedy(imgClone, 400);
 
 		if (key == 'c')
 			VerticalSeamCarvingGraphCut(imgClone, 500);
@@ -108,6 +116,6 @@ int main()
 
 	//ShowCursor(TRUE);
 
-	//editor.Shutdown();
+	editor.Shutdown();
 	cv::destroyAllWindows();
 }

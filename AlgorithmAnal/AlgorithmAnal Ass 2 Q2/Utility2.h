@@ -12,8 +12,6 @@
 #include <Windows.h>
 #include <chrono>
 
-#include "Editor.h"
-
 #undef MAX
 #undef max
 #undef min
@@ -39,7 +37,6 @@ inline int brushSize = 10;
 inline bool maskInitialized = false;
 inline float scale = 1000.f;
 inline float resolution = 1.f; // height/width or rows/cols of image (ie for landscape images this will be < 1.f)
-inline edit::Editor editor;
 
 // global constants
 inline const std::string ORIGINAL_IMAGE = "Original Image";
