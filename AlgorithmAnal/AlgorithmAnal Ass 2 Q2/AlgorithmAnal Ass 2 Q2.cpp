@@ -19,7 +19,6 @@
 
 int main()
 {
-	ShowCursor(FALSE);
 
 	// ==============
 	// LOAD THE IMAGE
@@ -82,7 +81,10 @@ int main()
 	// game loop
 	while (true)
 	{
+		ShowCursor(TRUE);
 		editor.Update();
+		ShowCursor(FALSE);
+
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
 		int key = cv::waitKey(1);
 
@@ -107,7 +109,6 @@ int main()
 			break;
 	}
 
-	ShowCursor(TRUE);
 
 	editor.Shutdown();
 	cv::destroyAllWindows();

@@ -10,8 +10,15 @@
 HWND hwnd = nullptr;  // Window handle
 HDC hdc = nullptr;    // Device context
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 // Window procedure to handle window messages
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+	// Crucial: Add ImGui message handling
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
+		return true;
+
 	switch (uMsg) {
 	case WM_SIZE:
 	case WM_SYSCOMMAND:
@@ -74,7 +81,9 @@ namespace edit
 		ImGui::Begin(name.c_str());
 
 		//std::cout << "hello\n";
-		ImGui::Text("hi");
+		//ImGui::Text("hi");
+		if (ImGui::Button("wan kin"))
+			std::cout << "hi\n";
 
 		ImGui::End();
 	}
@@ -131,6 +140,7 @@ namespace edit
 		Configure();
 
 		ImGui_ImplWin32_Init(hwnd);
+		ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 		ImGui_ImplOpenGL3_Init("#version 330 core");
 
 		AddWindow<Inspector>(true, true);
@@ -146,6 +156,19 @@ namespace edit
 
 	void Editor::Update()
 	{
+
+		// Process all pending Windows messages
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		// Clear the screen
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// Start ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -190,7 +213,7 @@ namespace edit
 	void Editor::Configure()
 	{
 		ImGuiIO &io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF("../Project/Exported/Fonts/Quicksand-Regular.ttf", 27.f);
+		io.Fonts->AddFontFromFileTTF("assets/Quicksand-Regular.ttf", 27.f);
 		io.WantCaptureMouse = true;
 
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
