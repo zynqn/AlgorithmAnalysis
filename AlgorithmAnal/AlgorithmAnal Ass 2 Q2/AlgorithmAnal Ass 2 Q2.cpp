@@ -13,12 +13,12 @@
 #include "SeamCarving2.h"
 #include "Utility2.h"
 
-// maxflow graph (for cut graph)
-#include "graph.h"
 
+#include <Windows.h>
 
 int main()
 {
+	//ShowCursor(FALSE);
 
 	// ==============
 	// LOAD THE IMAGE
@@ -76,20 +76,17 @@ int main()
 	cv::Mat imgClone = img.clone();
 	cv::Mat originalImg = img.clone();
 
-	editor.Init();
+	//editor.Init();
 
 	// game loop
 	while (true)
 	{
-		ShowCursor(TRUE);
-		editor.Update();
-		ShowCursor(FALSE);
-
+		//editor.Update();
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
 		int key = cv::waitKey(1);
 
 		if (key == 'c')
-			VerticalSeamCarvingDP(imgClone, 500);
+			VerticalSeamCarvingGraphCut(imgClone, 500);
 
 		if (key == 'b')
 			HorizontalSeamCarvingDP(imgClone, 400);
@@ -109,7 +106,8 @@ int main()
 			break;
 	}
 
+	//ShowCursor(TRUE);
 
-	editor.Shutdown();
+	//editor.Shutdown();
 	cv::destroyAllWindows();
 }
