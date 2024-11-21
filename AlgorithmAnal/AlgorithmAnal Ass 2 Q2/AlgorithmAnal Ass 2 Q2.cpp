@@ -20,21 +20,15 @@ edit::Editor editor;
 
 int main()
 {
-<<<<<<< HEAD
-=======
-	//ShowCursor(FALSE);
->>>>>>> a357cf524a9a86bff34f45dfb1ca972be32eb2ca
 
 	// ==============
 	// LOAD THE IMAGE
 	// ==============
 
 	// load the image
-<<<<<<< HEAD
+
 	cv::Mat img = cv::imread("assets/clock.png");
-=======
-	cv::Mat img = cv::imread("assets/images/clock.png");
->>>>>>> a357cf524a9a86bff34f45dfb1ca972be32eb2ca
+
 
 	// ensure image loaded properly
 	if (img.empty())

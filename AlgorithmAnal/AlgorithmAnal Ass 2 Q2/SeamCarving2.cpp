@@ -8,7 +8,6 @@
 
 // maxflow graph (for cut graph)
 #include "graph.h"
-//#include "graph.cpp"
 
 // =============
 // OBJECT REMOVAL
