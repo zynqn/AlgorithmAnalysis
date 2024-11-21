@@ -13,6 +13,7 @@
 #include "SeamCarving2.h"
 #include "Utility2.h"
 #include "Editor.h"
+#include "WinManager.h"
 
 // graph
 #include "matplotlibcpp.h"
@@ -22,6 +23,8 @@
 namespace plt = matplotlibcpp;
 
 edit::Editor editor;
+
+WinManager winManager;
 
 void plotter(std::vector<std::vector<double>> X, std::vector<std::vector<double>> Y, std::vector<std::vector<double>> Z)
 {
@@ -92,7 +95,9 @@ int main()
 
 		resolution = static_cast<float>(rows) / static_cast<float>(cols);
 		cv::imshow(ORIGINAL_IMAGE, img);
-		cv::imshow("Original Energy Map", displayEnergyMap);
+		winManager.OIWin = true;
+		cv::imshow(ORIGINAL_ENERGY_MAP, displayEnergyMap);
+		winManager.EMWin = true;
 
 		// clone the original image for the seam carving
 		cv::Mat imgClone = img.clone();
@@ -104,6 +109,8 @@ int main()
 		int key = cv::waitKey(1);
 
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::LockWindow(INSPECTOR,static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::LockWindow(ORIGINAL_ENERGY_MAP_W, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), displayEnergyMap.cols, displayEnergyMap.rows);
 
 #if 0
 		// ===================== 
@@ -132,7 +139,9 @@ int main()
 
 #endif
 
+		winManager.UpdateOIWin(editor.GetWindow<edit::WindowsManager>()->shldOpenOriginalImage, img);
 
+		winManager.UpdateEMWin(editor.GetWindow<edit::WindowsManager>()->shldOpenEnergyMap, displayEnergyMap);
 
 		if (key == 'h')
 			HorizontalSeamCarvingGreedy(imgClone, 500);

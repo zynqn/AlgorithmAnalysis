@@ -1,5 +1,7 @@
 #include "SeamCarving2.h"
 #include "Utility2.h"
+#include "Editor.h"
+#include "WinManager.h"
 
 #include <vector>
 #include <iomanip>
@@ -9,6 +11,9 @@
 // maxflow graph (for cut graph)
 #include "graph.h"
 //#include "graph.cpp"
+
+extern edit::Editor editor;
+extern WinManager winManager;
 
 // =============
 // OBJECT REMOVAL
@@ -621,8 +626,35 @@ void VisualizeVerticalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b
 		imgClone.at<cv::Vec3b>(i, seam[i]) = colour;
 	}
 
-	cv::imshow("Output", img);
-	cv::imshow("All Seams", imgClone);
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenCarvedImage)
+	{
+		cv::imshow("Output", img);
+		util::LockWindow(OUTPUT, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + imgClone.cols, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), img.cols, img.rows);
+		winManager.CIWin = true;
+	}
+	else
+	{
+		if (winManager.CIWin)
+		{
+			cv::destroyWindow("Output");
+			winManager.CIWin = false;
+		}
+	}
+
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenAllSeams)
+	{
+		cv::imshow("All Seams", imgClone);
+		util::LockWindow(ALL_SEAMS, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), imgClone.cols, imgClone.rows);
+		winManager.ASWin = true;
+	}
+	else
+	{
+		if (winManager.ASWin)
+		{
+			cv::destroyWindow("All Seams");
+			winManager.ASWin = false;
+		}
+	}
 
 	cv::waitKey(waitForMs);
 }
@@ -638,8 +670,35 @@ void VisualizeHorizontalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec
 		imgClone.at<cv::Vec3b>(seam[i], i) = colour;
 	}
 
-	cv::imshow("Output", img);
-	cv::imshow("All Seams", imgClone);
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenCarvedImage)
+	{
+		cv::imshow("Output", img);
+		util::LockWindow(OUTPUT, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + imgClone.cols, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), img.cols, img.rows);
+		winManager.CIWin = true;
+	}
+	else
+	{
+		if (winManager.CIWin)
+		{
+			cv::destroyWindow("Output");
+			winManager.CIWin = false;
+		}
+	}
+	
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenAllSeams)
+	{
+		cv::imshow("All Seams", imgClone);
+		util::LockWindow(ALL_SEAMS, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), imgClone.cols, imgClone.rows);
+		winManager.ASWin = true;
+	}
+	else
+	{
+		if (winManager.ASWin)
+		{
+			cv::destroyWindow("All Seams");
+			winManager.ASWin = false;
+		}
+	}
 
 	cv::waitKey(waitForMs);
 }

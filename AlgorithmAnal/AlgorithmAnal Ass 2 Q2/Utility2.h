@@ -41,6 +41,11 @@ inline int rows = 0, cols = 0;
 // global constants
 inline const std::string ORIGINAL_IMAGE = "Original Image";
 inline const std::wstring ORIGINAL_IMAGE_W = L"Original Image";
+inline const std::string ORIGINAL_ENERGY_MAP = "Original Energy Map";
+inline const std::wstring ORIGINAL_ENERGY_MAP_W = L"Original Energy Map";
+inline const std::wstring ALL_SEAMS= L"All Seams";
+inline const std::wstring OUTPUT = L"Output";
+inline const std::wstring INSPECTOR = L"Inspector";
 
 // global variables
 namespace
