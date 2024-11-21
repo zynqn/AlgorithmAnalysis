@@ -33,14 +33,22 @@ constexpr int THRESHOLD = 8;
 // global variables
 inline cv::Mat brushMask;
 inline bool isDrawing = false;
-inline int brushSize = 10;
+inline int brushSize = 5;
 inline bool maskInitialized = false;
-inline float scale = 1000.f;
 inline float resolution = 1.f; // height/width or rows/cols of image (ie for landscape images this will be < 1.f)
+inline int rows = 0, cols = 0;
+inline cv::Mat imgClone, originalImg, energyMap, displayEnergyMap;
 
 // global constants
 inline const std::string ORIGINAL_IMAGE = "Original Image";
 inline const std::wstring ORIGINAL_IMAGE_W = L"Original Image";
+inline const std::string ENERGY_MAP = "Energy Map";
+inline const std::wstring ENERGY_MAP_W = L"Energy Map";
+inline const std::string ALL_SEAMS = "All Seams";
+inline const std::wstring ALL_SEAMS_W = L"All Seams";
+inline const std::string CARVED_IMAGE = "Carved Image";
+inline const std::wstring CARVED_IMAGE_W = L"Carved Image";
+inline const std::wstring INSPECTOR_W = L"Inspector";
 
 // global variables
 namespace

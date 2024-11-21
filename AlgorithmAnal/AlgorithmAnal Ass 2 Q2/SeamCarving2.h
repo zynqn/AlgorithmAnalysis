@@ -62,7 +62,7 @@ std::vector<int> FindHorizontalSeamGreedy(cv::Mat const &energyMap);
 std::vector<int> FindHorizontalSeamDP(cv::Mat &cumMap);
 std::vector<int> FindHorizontalSeamGraphCut(cv::Mat const& energyMap);
 
-void RemoveHorizontalSeam(cv::Mat const &img, std::vector<int> const &seam);
+void RemoveHorizontalSeam(cv::Mat &img, std::vector<int> const &seam);
 
 // perform seam carving on the img to the specified target height
 void HorizontalSeamCarvingGreedy(cv::Mat &img, int targetHeight);

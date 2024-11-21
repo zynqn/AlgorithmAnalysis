@@ -1,5 +1,7 @@
 #include "SeamCarving2.h"
 #include "Utility2.h"
+#include "Editor.h"
+#include "WinManager.h"
 
 #include <vector>
 #include <iomanip>
@@ -8,6 +10,9 @@
 
 // maxflow graph (for cut graph)
 #include "graph.h"
+
+extern edit::Editor editor;
+extern WinManager winManager;
 
 // =============
 // OBJECT REMOVAL
@@ -58,52 +63,184 @@ void ModifyHorizontalEnergyMap(cv::Mat& energyMap, const std::vector<util::Mask>
 			energyMap.at<double>(curr, slice.pos) = setTo;
 }
 
+
 void ContentAwareRemoval(cv::Mat &img)
 {
 	if (brushMask.empty() || cv::countNonZero(brushMask) == 0)
 		return;
 
-	std::vector<util::Mask> toRemove;
+	// Create two temporary images and masks for testing both directions
+	cv::Mat imgVertical = img.clone();
+	cv::Mat imgHorizontal = img.clone();
+	cv::Mat maskVertical = brushMask.clone();
+	cv::Mat maskHorizontal = brushMask.clone();
 
-	for (int y = 0; y < brushMask.rows; ++y)
+	// Count seams needed for vertical removal
+	int verticalSeams = 0;
 	{
-		int start = -1;
-		int end = -1;
-
-		uchar *row = brushMask.ptr<uchar>(y);
-		for (int x = 0; x < brushMask.cols; ++x)
+		std::vector<util::Mask> toRemove;
+		for (int y = 0; y < maskVertical.rows; ++y)
 		{
-			if (row[x] > 0)
+			int start = -1;
+			int end = -1;
+
+			uchar *row = maskVertical.ptr<uchar>(y);
+			for (int x = 0; x < maskVertical.cols; ++x)
 			{
-				if (start == -1) start = x;
-				end = x;
+				if (row[x] > 0)
+				{
+					if (start == -1) start = x;
+					end = x;
+				}
 			}
+
+			if (start != -1 && end != -1)
+				toRemove.push_back({ start, end - start + 1, y });
 		}
 
-		if (start != -1 && end != -1)
-			toRemove.push_back({ start, end - start + 1, y });
+		while (!toRemove.empty())
+		{
+			std::vector<cv::Mat> channels;
+			cv::split(imgVertical, channels);
+			cv::Mat energyMap = CalculateEnergyMap(channels);
+			ModifyVerticalEnergyMap(energyMap, toRemove, MIN);
+
+			cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
+			std::vector<int> seam = FindVerticalSeamDP(cumMap);
+
+			RemoveVerticalSeam(imgVertical, seam);
+			verticalSeams++;
+
+			if (ModifyMask(toRemove, seam))
+				break;
+		}
 	}
 
-	while (!toRemove.empty())
+	// Count seams needed for horizontal removal
+	int horizontalSeams = 0;
 	{
-		std::vector<cv::Mat> channels;
-		cv::split(img, channels);
-		cv::Mat energyMap = CalculateEnergyMap(channels);
-		ModifyVerticalEnergyMap(energyMap, toRemove, MIN);
+		std::vector<util::Mask> toRemove;
+		for (int x = 0; x < maskHorizontal.cols; ++x)
+		{
+			int start = -1;
+			int end = -1;
 
-		cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
-		std::vector<int> seam = FindVerticalSeamDP(cumMap);
+			for (int y = 0; y < maskHorizontal.rows; ++y)
+			{
+				if (maskHorizontal.at<uchar>(y, x) > 0)
+				{
+					if (start == -1) start = y;
+					end = y;
+				}
+			}
 
-		VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255));
+			if (start != -1 && end != -1)
+				toRemove.push_back({ start, end - start + 1, x });
+		}
 
-		RemoveVerticalSeam(img, seam);
+		while (!toRemove.empty())
+		{
+			std::vector<cv::Mat> channels;
+			cv::split(imgHorizontal, channels);
+			cv::Mat energyMap = CalculateEnergyMap(channels);
+			ModifyHorizontalEnergyMap(energyMap, toRemove, MIN);
 
-		if (ModifyMask(toRemove, seam))
-			break;
+			cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
+			std::vector<int> seam = FindHorizontalSeamDP(cumMap);
+
+			RemoveHorizontalSeam(imgHorizontal, seam);
+			horizontalSeams++;
+
+			if (ModifyMask(toRemove, seam))
+				break;
+		}
+	}
+
+	// Choose the direction that requires fewer seams
+	bool useVerticalSeams = verticalSeams <= horizontalSeams;
+
+	// Now perform the actual removal using the better direction
+	if (useVerticalSeams)
+	{
+		std::vector<util::Mask> toRemove;
+		for (int y = 0; y < brushMask.rows; ++y)
+		{
+			int start = -1;
+			int end = -1;
+
+			uchar *row = brushMask.ptr<uchar>(y);
+			for (int x = 0; x < brushMask.cols; ++x)
+			{
+				if (row[x] > 0)
+				{
+					if (start == -1) start = x;
+					end = x;
+				}
+			}
+
+			if (start != -1 && end != -1)
+				toRemove.push_back({ start, end - start + 1, y });
+		}
+
+		while (!toRemove.empty())
+		{
+			std::vector<cv::Mat> channels;
+			cv::split(img, channels);
+			cv::Mat energyMap = CalculateEnergyMap(channels);
+			ModifyVerticalEnergyMap(energyMap, toRemove, MIN);
+
+			cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
+			std::vector<int> seam = FindVerticalSeamDP(cumMap);
+
+			VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255));
+			RemoveVerticalSeam(img, seam);
+
+			if (ModifyMask(toRemove, seam))
+				break;
+		}
+	}
+	else
+	{
+		std::vector<util::Mask> toRemove;
+		for (int x = 0; x < brushMask.cols; ++x)
+		{
+			int start = -1;
+			int end = -1;
+
+			for (int y = 0; y < brushMask.rows; ++y)
+			{
+				if (brushMask.at<uchar>(y, x) > 0)
+				{
+					if (start == -1) start = y;
+					end = y;
+				}
+			}
+
+			if (start != -1 && end != -1)
+				toRemove.push_back({ start, end - start + 1, x });
+		}
+
+		while (!toRemove.empty())
+		{
+			std::vector<cv::Mat> channels;
+			cv::split(img, channels);
+			cv::Mat energyMap = CalculateEnergyMap(channels);
+			ModifyHorizontalEnergyMap(energyMap, toRemove, MIN);
+
+			cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
+			std::vector<int> seam = FindHorizontalSeamDP(cumMap);
+
+			VisualizeHorizontalSeam(img, seam, cv::Vec3b(0, 0, 255));
+			RemoveHorizontalSeam(img, seam);
+
+			if (ModifyMask(toRemove, seam))
+				break;
+		}
 	}
 
 	brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
 }
+
 
 // =============
 // ENERGY MAP
@@ -618,9 +755,9 @@ void HorizontalSeamCarvingDP(cv::Mat& img, int targetHeight)
 		// recalculate energy map
 		cv::Mat energyMap = CalculateEnergyMap(channels);
 		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
-		cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
+		energyMap = CalculateHorizontalCumMap(energyMap);
 
-		std::vector<int> seam = FindHorizontalSeamDP(cumMap);
+		std::vector<int> seam = FindHorizontalSeamDP(energyMap);
 		VisualizeHorizontalSeam(img, seam, (0, 0, 255));
 		RemoveHorizontalSeam(img, seam);
 	}
@@ -665,8 +802,35 @@ void VisualizeVerticalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b
 		imgClone.at<cv::Vec3b>(i, seam[i]) = colour;
 	}
 
-	cv::imshow("Output", img);
-	cv::imshow("All Seams", imgClone);
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenCarvedImage)
+	{
+		cv::imshow(CARVED_IMAGE, img);
+		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		winManager.CIWin = true;
+	}
+	else
+	{
+		if (winManager.CIWin)
+		{
+			cv::destroyWindow(CARVED_IMAGE);
+			winManager.CIWin = false;
+		}
+	}
+
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenAllSeams)
+	{
+		cv::imshow(ALL_SEAMS, imgClone);
+		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		winManager.ASWin = true;
+	}
+	else
+	{
+		if (winManager.ASWin)
+		{
+			cv::destroyWindow(ALL_SEAMS);
+			winManager.ASWin = false;
+		}
+	}
 
 	cv::waitKey(waitForMs);
 }
@@ -682,8 +846,35 @@ void VisualizeHorizontalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec
 		imgClone.at<cv::Vec3b>(seam[i], i) = colour;
 	}
 
-	cv::imshow("Output", img);
-	cv::imshow("All Seams", imgClone);
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenCarvedImage)
+	{
+		cv::imshow(CARVED_IMAGE, img);
+		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + imgClone.cols, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), img.cols, img.rows);
+		winManager.CIWin = true;
+	}
+	else
+	{
+		if (winManager.CIWin)
+		{
+			cv::destroyWindow(CARVED_IMAGE);
+			winManager.CIWin = false;
+		}
+	}
+	
+	if (editor.GetWindow<edit::WindowsManager>()->shldOpenAllSeams)
+	{
+		cv::imshow(ALL_SEAMS, imgClone);
+		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), imgClone.cols, imgClone.rows);
+		winManager.ASWin = true;
+	}
+	else
+	{
+		if (winManager.ASWin)
+		{
+			cv::destroyWindow(ALL_SEAMS);
+			winManager.ASWin = false;
+		}
+	}
 
 	cv::waitKey(waitForMs);
 }
@@ -693,7 +884,7 @@ void DrawVerticalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour)
 	for (int i = 0; i < img.rows; ++i)
 		img.at<cv::Vec3b>(i, pos) = colour;
 
-	cv::imshow("Input", img);
+	cv::imshow(ORIGINAL_IMAGE, img);
 }
 
 void DrawHorizontalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour)
@@ -701,5 +892,5 @@ void DrawHorizontalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour)
 	for (int i = 0; i < img.cols; ++i)
 		img.at<cv::Vec3b>(pos, i) = colour;
 
-	cv::imshow("Input", img);
+	cv::imshow(ORIGINAL_IMAGE, img);
 }
