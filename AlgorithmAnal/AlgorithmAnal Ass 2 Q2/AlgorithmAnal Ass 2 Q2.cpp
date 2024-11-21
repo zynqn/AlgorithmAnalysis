@@ -12,6 +12,7 @@
 // seam carving
 #include "SeamCarving2.h"
 #include "Utility2.h"
+#include "Editor.h"
 
 // graph
 #include "matplotlibcpp.h"
@@ -30,7 +31,10 @@ void plotter(std::vector<std::vector<double>> X, std::vector<std::vector<double>
 
 int main()
 {
+<<<<<<< HEAD
+=======
 	//ShowCursor(FALSE);
+>>>>>>> a357cf524a9a86bff34f45dfb1ca972be32eb2ca
 
 	// ==============
 	// LOAD THE IMAGE
@@ -130,11 +134,17 @@ int main()
 
 
 
+		if (key == 'h')
+			HorizontalSeamCarvingGreedy(imgClone, 500);
+
+		if (key == 'g')
+			VerticalSeamCarvingGreedy(imgClone, 400);
+
 		if (key == 'c')
 			VerticalSeamCarvingGraphCut(imgClone, 500);
 
 		if (key == 'b')
-			HorizontalSeamCarvingDP(imgClone, 400);
+			HorizontalSeamCarvingGraphCut(imgClone, 400);
 
 		if (key == 'd')
 		{
@@ -153,7 +163,7 @@ int main()
 
 	//ShowCursor(TRUE);
 
-	//editor.Shutdown();
+	editor.Shutdown();
 	cv::destroyAllWindows();
 	return 0;
 }

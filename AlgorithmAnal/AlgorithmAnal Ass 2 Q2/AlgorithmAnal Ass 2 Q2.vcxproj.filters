@@ -95,5 +95,8 @@
     <ClInclude Include="..\lib\imgui\imgui_impl_win32.h">
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="IconsFontAwesome5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
