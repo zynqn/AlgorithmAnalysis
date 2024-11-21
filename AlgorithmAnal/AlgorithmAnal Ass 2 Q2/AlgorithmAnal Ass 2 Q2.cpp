@@ -42,6 +42,7 @@ int main()
 	// LOAD THE IMAGE
 	// ==============
 
+#if 0
 	// load the image
 	originalImg = cv::imread("assets/images/clifford's stick.jpg");
 
@@ -51,6 +52,7 @@ int main()
 		std::cerr << "Error: Could not load image.\n";
 		return -1;
 	}
+#endif
 
 	// ===============
 	// SET THE WINDOWS
@@ -58,12 +60,22 @@ int main()
 
 	cv::namedWindow(ORIGINAL_IMAGE, cv::WINDOW_NORMAL);
 	cv::setWindowProperty(ORIGINAL_IMAGE, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
+	//cv::destroyWindow(ORIGINAL_IMAGE);
+
+	cv::namedWindow(ENERGY_MAP, cv::WINDOW_NORMAL);
+	cv::setWindowProperty(ENERGY_MAP, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
+
+	//cv::namedWindow(CARVED_IMAGE, cv::WINDOW_NORMAL);
+	//cv::setWindowProperty(CARVED_IMAGE, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
+
+	//cv::namedWindow(ALL_SEAMS, cv::WINDOW_NORMAL);
+	//cv::setWindowProperty(ALL_SEAMS, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
 
 	brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
 	maskInitialized = true;
 
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
-	cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
+	//cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
 
 	
 
@@ -74,13 +86,13 @@ int main()
 	// GET ORIGINAL ENERGY MAP
 	// =======================
 
+#if 0
 	// Split the image into its 3 channels (B, G, R)
 		std::vector<cv::Mat> channels;
 		cv::split(originalImg, channels);  // channels[0] = Blue, channels[1] = Green, channels[2] = Red
 
 		// get original energy map
-		cv::Mat energyMap = CalculateEnergyMap(channels);
-		cv::Mat displayEnergyMap;
+		energyMap = CalculateEnergyMap(channels);
 
 		// Convert the energy map back to 8-bit format for display
 		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
@@ -93,22 +105,20 @@ int main()
 		// DISPLAY THE WINDOWS
 		// ===================
 
-		resolution = static_cast<float>(rows) / static_cast<float>(cols);
-		cv::imshow(ORIGINAL_IMAGE, originalImg);
 		winManager.OIWin = true;
-		cv::imshow(ORIGINAL_ENERGY_MAP, displayEnergyMap);
 		winManager.EMWin = true;
 
 		// clone the original image for the seam carving
 		imgClone = originalImg.clone();
+#endif
 
 	while (true)
 	{
 		editor.Update();
 		int key = cv::waitKey(1);
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
-		util::LockWindow(INSPECTOR,static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
-		util::LockWindow(ORIGINAL_ENERGY_MAP_W, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), displayEnergyMap.cols, displayEnergyMap.rows);
+		util::LockWindow(INSPECTOR_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::LockWindow(ENERGY_MAP_W, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 
 #if 0
 		// ===================== 
@@ -137,8 +147,7 @@ int main()
 
 #endif
 
-		winManager.UpdateOIWin(editor.GetWindow<edit::WindowsManager>()->shldOpenOriginalImage, img);
-
+		winManager.UpdateOIWin(editor.GetWindow<edit::WindowsManager>()->shldOpenOriginalImage, originalImg);
 		winManager.UpdateEMWin(editor.GetWindow<edit::WindowsManager>()->shldOpenEnergyMap, displayEnergyMap);
 
 		if (key == 'h')

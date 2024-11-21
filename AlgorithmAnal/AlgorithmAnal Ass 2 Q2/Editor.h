@@ -8,6 +8,8 @@
 
 /*! ------------ Editor Windows ------------ */
 
+#undef LoadImage
+
 namespace edit
 {
 
@@ -61,10 +63,17 @@ namespace edit
 		void OnEnter() override;
 		void OnUpdate() override;
 		void OnExit() override;
+
+		void LoadImage();
+		void UnloadImage();
+
+		bool isFileLoaded = false;
 	};
 
 	class SeamCarver : public EditorWindow
 	{
+		int width = 1.f, height = 1.f;
+
 		const std::array<const char *, MAX_ALGO> modes =
 		{
 			"Greedy",
@@ -95,7 +104,7 @@ namespace edit
 		void OnExit() override;
 
 		bool shldOpenOriginalImage = true;
-		bool shldOpenAllSeams = true;
+		bool shldOpenAllSeams = false;
 		bool shldOpenCarvedImage = true;
 		bool shldOpenEnergyMap = true;
 		bool shldOpenEnergyGraph = true;

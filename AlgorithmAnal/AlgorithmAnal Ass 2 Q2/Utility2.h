@@ -37,16 +37,18 @@ inline int brushSize = 5;
 inline bool maskInitialized = false;
 inline float resolution = 1.f; // height/width or rows/cols of image (ie for landscape images this will be < 1.f)
 inline int rows = 0, cols = 0;
-inline cv::Mat imgClone, originalImg;
+inline cv::Mat imgClone, originalImg, energyMap, displayEnergyMap;
 
 // global constants
 inline const std::string ORIGINAL_IMAGE = "Original Image";
 inline const std::wstring ORIGINAL_IMAGE_W = L"Original Image";
-inline const std::string ORIGINAL_ENERGY_MAP = "Original Energy Map";
-inline const std::wstring ORIGINAL_ENERGY_MAP_W = L"Original Energy Map";
-inline const std::wstring ALL_SEAMS= L"All Seams";
-inline const std::wstring OUTPUT = L"Output";
-inline const std::wstring INSPECTOR = L"Inspector";
+inline const std::string ENERGY_MAP = "Energy Map";
+inline const std::wstring ENERGY_MAP_W = L"Energy Map";
+inline const std::string ALL_SEAMS = "All Seams";
+inline const std::wstring ALL_SEAMS_W = L"All Seams";
+inline const std::string CARVED_IMAGE = "Carved Image";
+inline const std::wstring CARVED_IMAGE_W = L"Carved Image";
+inline const std::wstring INSPECTOR_W = L"Inspector";
 
 // global variables
 namespace

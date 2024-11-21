@@ -1,5 +1,8 @@
 #pragma once
 #include "WinManager.h"
+#include "Editor.h"
+
+extern edit::Editor editor;
 
 WinManager::WinManager()
 {
@@ -8,6 +11,9 @@ WinManager::WinManager()
 
 void WinManager::UpdateOIWin(bool toggle, cv::Mat& img)
 {
+	if (!editor.GetWindow<edit::ImageLoader>()->isFileLoaded)
+		return;
+
 	if (toggle)
 	{
 		if (!OIWin)
@@ -36,12 +42,14 @@ void WinManager::UpdateOIWin(bool toggle, cv::Mat& img)
 
 void WinManager::UpdateEMWin(bool toggle, cv::Mat& em)
 {
+	if (!editor.GetWindow<edit::ImageLoader>()->isFileLoaded)
+		return;
 
 	if (toggle)
 	{
 		if (!EMWin)
 		{
-			cv::imshow(ORIGINAL_ENERGY_MAP, em);
+			cv::imshow(ENERGY_MAP, em);
 			EMWin = true;
 		}
 	}
@@ -50,7 +58,7 @@ void WinManager::UpdateEMWin(bool toggle, cv::Mat& em)
 		if (EMWin)
 		{
 			EMWin = false;
-			cv::destroyWindow(ORIGINAL_ENERGY_MAP);
+			cv::destroyWindow(ENERGY_MAP);
 		}
 	}
 }

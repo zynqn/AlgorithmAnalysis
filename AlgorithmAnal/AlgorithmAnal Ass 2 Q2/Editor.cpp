@@ -9,6 +9,7 @@
 #include "IconsFontAwesome5.h"
 #include "Editor.h"
 #include "SeamCarving2.h"
+#include "WinManager.h"
 
 #include <filesystem>
 
@@ -18,6 +19,9 @@
 
 //todo choose to reset image or not after carving
 //todo expose api for editor
+
+extern WinManager winManager;
+extern edit::Editor editor;
 
 /*! ------------ Function Wrapper Macros ------------ */
 
@@ -175,7 +179,8 @@ namespace edit
 				if ((asset.extension() == ".png" || asset.extension() == ".jpg") && std::filesystem::exists(asset))
 				{
 					loadedFile = asset.filename().string();
-					originalImg = cv::imread(asset.filename().string());
+					imgClone = originalImg = cv::imread(asset.string());
+					LoadImage();
 				}
 			}
 
@@ -185,7 +190,7 @@ namespace edit
 		ImGui::SameLine();
 		IconWrap(ImGui::Button(ICON_FA_MINUS "##Remove_File");)
 		if (ImGui::IsItemClicked())
-			loadedFile = "No file selected";
+			UnloadImage();
 
 		ImGui::PopTextWrapPos();
 		ImGui::End();
@@ -194,6 +199,49 @@ namespace edit
 	void ImageLoader::OnExit()
 	{
 
+	}
+
+	void ImageLoader::LoadImage()
+	{
+		std::vector<cv::Mat> channels;
+		cv::split(originalImg, channels);  // channels[0] = Blue, channels[1] = Green, channels[2] = Red
+		energyMap = CalculateEnergyMap(channels);
+
+		// Convert the energy map back to 8-bit format for display
+		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
+		energyMap.convertTo(displayEnergyMap, CV_8U);
+		cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
+
+		rows = energyMap.rows;
+		cols = energyMap.cols;
+		resolution = static_cast<float>(rows) / static_cast<float>(cols);
+		isFileLoaded = true;
+
+		if (winManager.CIWin)
+			cv::destroyWindow(CARVED_IMAGE);
+		if (winManager.ASWin)
+			cv::destroyWindow(ALL_SEAMS);
+
+		if (editor.GetWindow<WindowsManager>()->shldOpenOriginalImage)
+			cv::imshow(ORIGINAL_IMAGE, originalImg);
+		if (editor.GetWindow<WindowsManager>()->shldOpenEnergyMap)
+			cv::imshow(ENERGY_MAP, displayEnergyMap);
+	}
+
+	void ImageLoader::UnloadImage()
+	{
+		loadedFile = "No file selected";
+		rows = cols = 0;
+		isFileLoaded = false;
+
+		if (winManager.OIWin)
+			cv::destroyWindow(ORIGINAL_IMAGE);
+		if (winManager.EMWin)
+			cv::destroyWindow(ENERGY_MAP);
+		if (winManager.CIWin)
+			cv::destroyWindow(CARVED_IMAGE);
+		if (winManager.ASWin)
+			cv::destroyWindow(ALL_SEAMS);
 	}
 
 	SeamCarver::SeamCarver(const std::string &_name, bool _isToggleable)
@@ -212,16 +260,14 @@ namespace edit
 		ImGui::Begin(name.c_str());
 		AddSpace(2);
 
-		static float width = 0, height = 0;
-
 		ImGui::RadioButton("Carve to Size", &carveSelected, CARVE_TO_SIZE);
 		AddSpace(1);
 
 		if (carveSelected != CARVE_TO_SIZE)
 			ImGui::BeginDisabled();
 
-		ImGui::SliderFloat("Target Width", &width, 0.f, 1920.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-		ImGui::SliderFloat("Target Height", &height, 0.f, 1080.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SliderInt("Target Width", &width, 1, cols, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SliderInt("Target Height", &height, 1, rows, "%d", ImGuiSliderFlags_AlwaysClamp);
 
 		if (ImGui::BeginCombo("Algorithm", modes[modeSelected]))
 		{
@@ -242,8 +288,6 @@ namespace edit
 		if (carveSelected != OBJECT_REMOVAL)
 			ImGui::BeginDisabled();
 
-		ImGui::Button("Test");
-
 		if (carveSelected != OBJECT_REMOVAL)
 			ImGui::EndDisabled();
 
@@ -255,6 +299,9 @@ namespace edit
 		{
 			imgClone = originalImg.clone();
 			brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
+			rows = imgClone.rows;
+			cols = imgClone.cols;
+			resolution = static_cast<float>(rows) / static_cast<float>(cols);
 		}
 
 		ImGui::SameLine();
@@ -284,11 +331,18 @@ namespace edit
 				break;
 
 			case OBJECT_REMOVAL:
-				
 				ContentAwareRemoval(imgClone);
 				break;
 			}
+
+			rows = imgClone.rows;
+			cols = imgClone.cols;
+			resolution = static_cast<float>(rows) / static_cast<float>(cols);
 		}
+
+		AddSpace(1);
+		ImGui::Checkbox("Show Carved Image", &editor.GetWindow<WindowsManager>()->shldOpenCarvedImage);
+		ImGui::Checkbox("Show All Seams", &editor.GetWindow<WindowsManager>()->shldOpenAllSeams);
 
 		ImGui::End();
 	}
@@ -315,8 +369,6 @@ namespace edit
 		AddSpace(2);
 
 		ImGui::Checkbox("Show Original Image", &shldOpenOriginalImage);
-		ImGui::Checkbox("Show Carved Image", &shldOpenCarvedImage);
-		ImGui::Checkbox("Show All Seams", &shldOpenAllSeams);
 		ImGui::Checkbox("Show Energy Map", &shldOpenEnergyMap);
 		ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
 

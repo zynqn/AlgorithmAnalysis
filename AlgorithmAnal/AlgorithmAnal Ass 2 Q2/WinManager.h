@@ -23,8 +23,8 @@ public:
 	void UpdateOIWin(bool toggle, cv::Mat& img);
 	void UpdateEMWin(bool toggle, cv::Mat& img);
 
-	bool OIWin;
-	bool EMWin;
-	bool CIWin = true;
-	bool ASWin = true;
+	bool OIWin = false;
+	bool EMWin = false;
+	bool CIWin = false;
+	bool ASWin = false;
 };
