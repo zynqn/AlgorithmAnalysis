@@ -4,6 +4,7 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
+#include "graph.cpp"
 
 // maxflow graph (for cut graph)
 #include "graph.h"

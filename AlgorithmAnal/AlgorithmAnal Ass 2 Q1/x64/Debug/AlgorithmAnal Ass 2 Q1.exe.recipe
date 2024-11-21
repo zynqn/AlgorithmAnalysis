@@ -2,7 +2,11 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
+<<<<<<< HEAD
       <FullPath>C:\Users\cliff\Documents\Clifford Tan\SIT\Year 3\CSD 3131 Algorithm Analysis\Assignment 2\AlgorithmAnal\AlgorithmAnal\x64\Debug\AlgorithmAnal Ass 2 Q1.exe</FullPath>
+=======
+      <FullPath>D:\Github\AlgorithmAnal\AlgorithmAnal\x64\Debug\AlgorithmAnal Ass 2 Q1.exe</FullPath>
+>>>>>>> ee0c4fc75d9edbb337d2843105633ae2751b38f0
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
