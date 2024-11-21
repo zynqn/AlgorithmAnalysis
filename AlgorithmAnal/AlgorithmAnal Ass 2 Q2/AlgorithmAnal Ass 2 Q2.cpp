@@ -21,6 +21,7 @@
 
 namespace plt = matplotlibcpp;
 
+edit::Editor editor;
 
 void plotter(std::vector<std::vector<double>> X, std::vector<std::vector<double>> Y, std::vector<std::vector<double>> Z)
 {
@@ -63,16 +64,9 @@ int main()
 
 	
 
-	//editor.Init();
+	editor.Init();
 
 	// game loop
-	while (true)
-	{
-		//editor.Update();
-		std::cout << "hello\n";
-		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
-		int key = cv::waitKey(1);
-
 		// =======================
 	// GET ORIGINAL ENERGY MAP
 	// =======================
@@ -89,7 +83,8 @@ int main()
 		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
 		energyMap.convertTo(displayEnergyMap, CV_8U);
 
-	int rows = energyMap.rows, cols = energyMap.cols;
+		rows = energyMap.rows;
+		cols = energyMap.cols;
 
 		// ===================
 		// DISPLAY THE WINDOWS
@@ -103,7 +98,14 @@ int main()
 		cv::Mat imgClone = img.clone();
 		cv::Mat originalImg = img.clone();
 
-#if 01
+	while (true)
+	{
+		editor.Update();
+		int key = cv::waitKey(1);
+
+		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+
+#if 0
 		// ===================== 
 		// PREPARE 3D PLOT 
 		// =====================
@@ -161,7 +163,7 @@ int main()
 
 	//ShowCursor(TRUE);
 
-	//editor.Shutdown();
+	editor.Shutdown();
 	cv::destroyAllWindows();
 	return 0;
 }
