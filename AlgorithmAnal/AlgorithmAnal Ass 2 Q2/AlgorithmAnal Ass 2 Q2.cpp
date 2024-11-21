@@ -40,10 +40,10 @@ int main()
 	// ==============
 
 	// load the image
-	cv::Mat img = cv::imread("assets/tower.png");
+	originalImg = cv::imread("assets/images/clifford's stick.jpg");
 
 	// ensure image loaded properly
-	if (img.empty())
+	if (originalImg.empty())
 	{
 		std::cerr << "Error: Could not load image.\n";
 		return -1;
@@ -56,11 +56,11 @@ int main()
 	cv::namedWindow(ORIGINAL_IMAGE, cv::WINDOW_NORMAL);
 	cv::setWindowProperty(ORIGINAL_IMAGE, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
 
-	brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
+	brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
 	maskInitialized = true;
 
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
-	cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &img);
+	cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
 
 	
 
@@ -73,7 +73,7 @@ int main()
 
 	// Split the image into its 3 channels (B, G, R)
 		std::vector<cv::Mat> channels;
-		cv::split(img, channels);  // channels[0] = Blue, channels[1] = Green, channels[2] = Red
+		cv::split(originalImg, channels);  // channels[0] = Blue, channels[1] = Green, channels[2] = Red
 
 		// get original energy map
 		cv::Mat energyMap = CalculateEnergyMap(channels);
@@ -91,18 +91,16 @@ int main()
 		// ===================
 
 		resolution = static_cast<float>(rows) / static_cast<float>(cols);
-		cv::imshow(ORIGINAL_IMAGE, img);
+		cv::imshow(ORIGINAL_IMAGE, originalImg);
 		cv::imshow("Original Energy Map", displayEnergyMap);
 
 		// clone the original image for the seam carving
-		cv::Mat imgClone = img.clone();
-		cv::Mat originalImg = img.clone();
+		imgClone = originalImg.clone();
 
 	while (true)
 	{
 		editor.Update();
 		int key = cv::waitKey(1);
-
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 
 #if 0
@@ -154,7 +152,7 @@ int main()
 		else if (key == 'r')
 		{
 			imgClone = originalImg.clone();
-			brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
+			brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
 			cv::imshow(ORIGINAL_IMAGE, imgClone);
 		}
 		else if (key == cv::ESC_KEY)

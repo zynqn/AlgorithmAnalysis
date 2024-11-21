@@ -33,10 +33,11 @@ constexpr int THRESHOLD = 8;
 // global variables
 inline cv::Mat brushMask;
 inline bool isDrawing = false;
-inline int brushSize = 10;
+inline int brushSize = 5;
 inline bool maskInitialized = false;
 inline float resolution = 1.f; // height/width or rows/cols of image (ie for landscape images this will be < 1.f)
 inline int rows = 0, cols = 0;
+inline cv::Mat imgClone, originalImg;
 
 // global constants
 inline const std::string ORIGINAL_IMAGE = "Original Image";

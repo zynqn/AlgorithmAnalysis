@@ -8,6 +8,7 @@
 #include "gl/GL.h"
 #include "IconsFontAwesome5.h"
 #include "Editor.h"
+#include "SeamCarving2.h"
 
 #include <filesystem>
 
@@ -172,7 +173,10 @@ namespace edit
 			{
 				std::filesystem::path asset = std::string(static_cast<const char *>(payload->Data), payload->DataSize);
 				if ((asset.extension() == ".png" || asset.extension() == ".jpg") && std::filesystem::exists(asset))
+				{
 					loadedFile = asset.filename().string();
+					originalImg = cv::imread(asset.filename().string());
+				}
 			}
 
 			ImGui::EndDragDropTarget();
@@ -242,6 +246,49 @@ namespace edit
 
 		if (carveSelected != OBJECT_REMOVAL)
 			ImGui::EndDisabled();
+
+		AddSpace(2);
+		ImGui::Separator();
+		AddSpace(2);
+
+		if (ImGui::Button("Reset"))
+		{
+			imgClone = originalImg.clone();
+			brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Carve"))
+		{
+			switch (carveSelected)
+			{
+			case CARVE_TO_SIZE:
+				switch (modeSelected)
+				{
+				case GREEDY:
+					VerticalSeamCarvingGreedy(imgClone, width);
+					HorizontalSeamCarvingGreedy(imgClone, height);
+					break;
+
+				case DYNAMIC:
+					VerticalSeamCarvingDP(imgClone, width);
+					HorizontalSeamCarvingDP(imgClone, height);
+					break;
+
+				case GRAPH:
+					VerticalSeamCarvingGraphCut(imgClone, width);
+					HorizontalSeamCarvingGraphCut(imgClone, height);
+					break;
+				}
+				break;
+
+			case OBJECT_REMOVAL:
+				
+				ContentAwareRemoval(imgClone);
+				break;
+			}
+		}
 
 		ImGui::End();
 	}

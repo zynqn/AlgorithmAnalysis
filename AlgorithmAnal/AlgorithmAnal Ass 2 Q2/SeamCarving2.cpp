@@ -85,19 +85,24 @@ void ContentAwareRemoval(cv::Mat &img)
 			toRemove.push_back({ start, end - start + 1, y });
 	}
 
+	int max = 0;
+	for (util::Mask row : toRemove)
+		max = std::max(max, row.size);
+	bool shldUseVertical = max < static_cast<int>(toRemove.size());
+	std::cout << "max: " << max << ", size: " << static_cast<int>(toRemove.size()) << nl;
+
 	while (!toRemove.empty())
 	{
 		std::vector<cv::Mat> channels;
 		cv::split(img, channels);
 		cv::Mat energyMap = CalculateEnergyMap(channels);
-		ModifyVerticalEnergyMap(energyMap, toRemove, MIN);
+		shldUseVertical ? ModifyVerticalEnergyMap(energyMap, toRemove, MIN) : ModifyHorizontalEnergyMap(energyMap, toRemove, MIN);
 
-		cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
-		std::vector<int> seam = FindVerticalSeamDP(cumMap);
+		cv::Mat cumMap = shldUseVertical ? CalculateVerticalCumMap(energyMap) : CalculateHorizontalCumMap(energyMap);
+		std::vector<int> seam = shldUseVertical ? FindVerticalSeamDP(cumMap) : FindHorizontalSeamDP(cumMap);
 
-		VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255));
-
-		RemoveVerticalSeam(img, seam);
+		shldUseVertical ? VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255)) : VisualizeHorizontalSeam(img, seam, cv::Vec3b(0, 0, 255));
+		shldUseVertical ? RemoveVerticalSeam(img, seam) : RemoveHorizontalSeam(img, seam);
 
 		if (ModifyMask(toRemove, seam))
 			break;
