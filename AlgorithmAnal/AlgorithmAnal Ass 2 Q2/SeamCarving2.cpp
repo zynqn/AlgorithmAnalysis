@@ -108,6 +108,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
 			std::vector<int> seam = FindVerticalSeamDP(cumMap);
 
+			VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255));
 			RemoveVerticalSeam(imgVertical, seam);
 			verticalSeams++;
 
@@ -148,6 +149,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
 			std::vector<int> seam = FindHorizontalSeamDP(cumMap);
 
+			VisualizeHorizontalSeam(img, seam, cv::Vec3b(0, 0, 255));
 			RemoveHorizontalSeam(imgHorizontal, seam);
 			horizontalSeams++;
 

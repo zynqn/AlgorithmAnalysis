@@ -121,7 +121,7 @@ namespace edit
 		void OnExit() override;
 
 		bool shldOpenOriginalImage = true;
-		bool shldOpenAllSeams = false;
+		bool shldOpenAllSeams = true;
 		bool shldOpenCarvedImage = true;
 		bool shldOpenEnergyMap = true;
 		bool shldOpenEnergyGraph = true;

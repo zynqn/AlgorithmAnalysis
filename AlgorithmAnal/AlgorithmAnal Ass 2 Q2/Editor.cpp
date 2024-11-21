@@ -374,7 +374,7 @@ namespace edit
 
 		if (ImGui::Button("Reset"))
 		{
-			imgClone = originalImg.clone();
+			imgClone = allSeams = originalImg.clone();
 			brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
 			rows = imgClone.rows;
 			cols = imgClone.cols;
@@ -448,7 +448,7 @@ namespace edit
 
 		ImGui::Checkbox("Show Original Image", &shldOpenOriginalImage);
 		ImGui::Checkbox("Show Energy Map", &shldOpenEnergyMap);
-		ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
+		//ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
 		ImGui::Checkbox("Show Carved Image", &shldOpenCarvedImage);
 		ImGui::Checkbox("Show All Seams", &shldOpenAllSeams);
 
