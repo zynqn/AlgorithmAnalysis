@@ -468,9 +468,9 @@ namespace edit
 		AddSpace(2);
 
 		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");
-		ImGui::SameLine();
-		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
-		ImGui::SetItemTooltip("Set the width of all windows to this value. The resultant heights will be calculated from the resolution.");
+		//ImGui::SameLine();
+		//StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		//ImGui::SetItemTooltip("Set the width of all windows to this value. The resultant heights will be calculated from the resolution.");
 
 		AddSpace(1);
 		ImGui::Text("Resolution: %d * %d", cols, rows);
