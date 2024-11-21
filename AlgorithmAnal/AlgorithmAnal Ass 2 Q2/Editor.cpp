@@ -183,10 +183,6 @@ namespace edit
 		if (ImGui::IsItemClicked())
 			loadedFile = "No file selected";
 
-		//ImGui::SameLine();
-		//StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
-		//ImGui::SetItemTooltip("Drag and drop a png or jpg file from the above list box to load it.");
-
 		ImGui::PopTextWrapPos();
 		ImGui::End();
 	}
@@ -276,6 +272,14 @@ namespace edit
 		ImGui::Checkbox("Show All Seams", &shldOpenAllSeams);
 		ImGui::Checkbox("Show Energy Map", &shldOpenEnergyMap);
 		ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
+
+		AddSpace(2);
+		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");
+
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("Set the width of all windows to this value. Their resultant heights will be calculated from their resolution.");
+		ImGui::Text("Resolution: 1920 * 1080");
 
 		ImGui::End();
 	}

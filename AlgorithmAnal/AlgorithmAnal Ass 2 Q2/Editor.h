@@ -99,6 +99,8 @@ namespace edit
 		bool shldOpenCarvedImage = true;
 		bool shldOpenEnergyMap = true;
 		bool shldOpenEnergyGraph = true;
+
+		float scale = 1000.f;
 	};
 
 	/*! ------------ Editor Windows Manager ------------ */
