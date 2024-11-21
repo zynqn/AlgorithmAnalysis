@@ -31,10 +31,8 @@ void plotter(std::vector<std::vector<double>> X, std::vector<std::vector<double>
 
 int main()
 {
-<<<<<<< HEAD
-=======
+
 	//ShowCursor(FALSE);
->>>>>>> a357cf524a9a86bff34f45dfb1ca972be32eb2ca
 
 	// ==============
 	// LOAD THE IMAGE
@@ -163,7 +161,7 @@ int main()
 
 	//ShowCursor(TRUE);
 
-	editor.Shutdown();
+	//editor.Shutdown();
 	cv::destroyAllWindows();
 	return 0;
 }
