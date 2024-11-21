@@ -65,7 +65,8 @@ int main()
 	cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
 	energyMap.convertTo(displayEnergyMap, CV_8U);
 
-	int rows = energyMap.rows, cols = energyMap.cols;
+	rows = energyMap.rows;
+	cols = energyMap.cols;
 
 	// ===================
 	// DISPLAY THE WINDOWS
@@ -84,7 +85,7 @@ int main()
 	while (true)
 	{
 		editor.Update();
-		//util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
+		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 		int key = cv::waitKey(1);
 
 		if (key == 'h')

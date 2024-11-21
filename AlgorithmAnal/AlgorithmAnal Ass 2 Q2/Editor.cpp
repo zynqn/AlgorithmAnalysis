@@ -278,8 +278,8 @@ namespace edit
 
 		ImGui::SameLine();
 		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
-		ImGui::SetItemTooltip("Set the width of all windows to this value. Their resultant heights will be calculated from their resolution.");
-		ImGui::Text("Resolution: 1920 * 1080");
+		ImGui::SetItemTooltip("Set the width of all windows to this value. The resultant heights will be calculated from the resolution.");
+		ImGui::Text("Resolution: %d * %d", cols, rows);
 
 		ImGui::End();
 	}
