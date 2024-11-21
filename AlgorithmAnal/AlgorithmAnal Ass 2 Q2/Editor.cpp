@@ -46,28 +46,29 @@ HDC hdc = nullptr;    // Device context
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Window procedure to handle window messages
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{
+	// Handle window close messages explicitly before passing to ImGui
+	if (uMsg == WM_CLOSE || (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_CLOSE)) 
+	{
+		PostQuitMessage(0);
+		return 0;
+	}
 
 	// Crucial: Add ImGui message handling
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 		return true;
 
-	switch (uMsg) {
-	case WM_CLOSE:
-		PostQuitMessage(0);
+	switch (uMsg) 
+	{
+	case WM_SIZE: 
+		if (wParam != SIZE_MINIMIZED) 
+			glViewport(0, 0, LOWORD(lParam), HIWORD(lParam)); // Update OpenGL viewport
 		return 0;
-
-	case WM_SIZE: {
-		int width = LOWORD(lParam);  // Client area width
-		int height = HIWORD(lParam); // Client area height
-		if (wParam != SIZE_MINIMIZED) {
-			glViewport(0, 0, width, height); // Update OpenGL viewport
-		}
-		return 0;
-	}
 
 	case WM_SYSCOMMAND:
-		if ((wParam & 0xFFF0) == SC_CLOSE) {
+		if ((wParam & 0xFFF0) == SC_CLOSE) 
+		{
 			PostQuitMessage(0); // Close the application
 			return 0;
 		}
@@ -148,10 +149,10 @@ namespace edit
 
 		AddSpace(2);
 		ImGui::SeparatorText("Load");
-		AddSpace(2);
+		AddSpace(1);
 
 		ImGui::Text("Double click a file in the list box to open it or drag and drop it into the bar below to load it.");
-		AddSpace(2);
+		AddSpace(1);
 		bool doesFileExist = false;
 
 		if (ImGui::BeginListBox("##Files", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing())))
@@ -184,7 +185,7 @@ namespace edit
 			ImGui::EndListBox();
 		}
 
-		AddSpace(2);
+		AddSpace(1);
 		ImGui::InputText("##InputFile", &loadedFile, ImGuiInputTextFlags_ReadOnly);
 
 		if (ImGui::BeginDragDropTarget())
@@ -210,7 +211,7 @@ namespace edit
 
 		AddSpace(2);
 		ImGui::SeparatorText("Save");
-		AddSpace(2);
+		AddSpace(1);
 
 		ImGui::InputText("File Name", &newFileName, ImGuiInputTextFlags_CallbackCharFilter, FilterAlphanumeric);
 		if (doesFileExist || newFileName.empty())
@@ -237,7 +238,7 @@ namespace edit
 		ImGui::SameLine();
 		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
 		ImGui::SetItemTooltip("The larger the number, the smaller the file but the lower the quality.");
-		AddSpace(2);
+		AddSpace(1);
 		
 		if (doesFileExist || newFileName.empty())
 			ImGui::BeginDisabled();
@@ -304,7 +305,7 @@ namespace edit
 		loadedFile = "No file selected";
 		rows = cols = 0;
 		isFileLoaded = false;
-		imgClone = originalImg = displayEnergyMap = energyMap = cv::Mat();
+		imgClone = originalImg = displayEnergyMap = energyMap = allSeams = cv::Mat();
 
 #if 0
 		cv::imshow(ORIGINAL_IMAGE, originalImg);
@@ -372,16 +373,16 @@ namespace edit
 		if (!editor.GetWindow<ImageLoader>()->isFileLoaded)
 			ImGui::BeginDisabled();
 
-		if (ImGui::Button("Reset"))
-		{
-			imgClone = allSeams = originalImg.clone();
-			brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
-			rows = imgClone.rows;
-			cols = imgClone.cols;
-			resolution = static_cast<float>(rows) / static_cast<float>(cols);
-		}
+		//if (ImGui::Button("Reset"))
+		//{
+		//	imgClone = allSeams = originalImg.clone();
+		//	brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
+		//	rows = imgClone.rows;
+		//	cols = imgClone.cols;
+		//	resolution = static_cast<float>(rows) / static_cast<float>(cols);
+		//}
 
-		ImGui::SameLine();
+		//ImGui::SameLine();
 
 		if (ImGui::Button("Carve"))
 		{
@@ -453,11 +454,15 @@ namespace edit
 		ImGui::Checkbox("Show All Seams", &shldOpenAllSeams);
 
 		AddSpace(2);
-		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");
+		ImGui::Separator();
+		AddSpace(2);
 
+		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");
 		ImGui::SameLine();
 		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
 		ImGui::SetItemTooltip("Set the width of all windows to this value. The resultant heights will be calculated from the resolution.");
+
+		AddSpace(1);
 		ImGui::Text("Resolution: %d * %d", cols, rows);
 
 		ImGui::End();
@@ -479,15 +484,7 @@ namespace edit
 		RegisterClass(&wc);
 		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-		hwnd = CreateWindowEx(
-			0,
-			className,
-			L"Inspector",
-			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT,
-			1200, 900, // Increase logical window size for high resolution
-			nullptr, nullptr, wc.hInstance, nullptr
-		);
+		hwnd = CreateWindowEx(0, className, className, WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, 1200, 900, nullptr, nullptr, wc.hInstance, nullptr);
 
 		// Set the OpenGL context
 		PIXELFORMATDESCRIPTOR pfd = { };
