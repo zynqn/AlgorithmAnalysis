@@ -12,19 +12,29 @@
 // seam carving
 #include "SeamCarving2.h"
 #include "Utility2.h"
-
+#include "Editor.h"
 
 #include <Windows.h>
 
+edit::Editor editor;
+
 int main()
 {
+<<<<<<< HEAD
+=======
+	//ShowCursor(FALSE);
+>>>>>>> a357cf524a9a86bff34f45dfb1ca972be32eb2ca
 
 	// ==============
 	// LOAD THE IMAGE
 	// ==============
 
 	// load the image
+<<<<<<< HEAD
 	cv::Mat img = cv::imread("assets/clock.png");
+=======
+	cv::Mat img = cv::imread("assets/images/clock.png");
+>>>>>>> a357cf524a9a86bff34f45dfb1ca972be32eb2ca
 
 	// ensure image loaded properly
 	if (img.empty())
@@ -75,14 +85,20 @@ int main()
 	cv::Mat imgClone = img.clone();
 	cv::Mat originalImg = img.clone();
 
-	//editor.Init();
+	editor.Init();
 
 	// game loop
 	while (true)
 	{
-		//editor.Update();
-		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
+		editor.Update();
+		//util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(scale), static_cast<int>(scale * resolution));
 		int key = cv::waitKey(1);
+
+		if (key == 'h')
+			HorizontalSeamCarvingGreedy(imgClone, 500);
+
+		if (key == 'g')
+			VerticalSeamCarvingGreedy(imgClone, 400);
 
 		if (key == 'c')
 			VerticalSeamCarvingGraphCut(imgClone, 500);
@@ -105,8 +121,8 @@ int main()
 			break;
 	}
 
-	ShowCursor(TRUE);
+	//ShowCursor(TRUE);
 
-	//editor.Shutdown();
+	editor.Shutdown();
 	cv::destroyAllWindows();
 }

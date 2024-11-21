@@ -1,30 +1,85 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_internal.h"
+#include "imgui_stdlib.h"
+
 #include "Windows.h"
 #include "gl/GL.h"
-
+#include "IconsFontAwesome5.h"
 #include "Editor.h"
+
+#include <filesystem>
+
+// File Loader
+// Seam Carving
+// Windows
+
+//todo choose to reset image or not after carving
+//todo expose api for editor
+
+/*! ------------ Function Wrapper Macros ------------ */
+
+#define IconWrap(code) { ImGui::PushFont(iconFont); { code } ImGui::PopFont(); }
+#define StyleVarWrap(style, vec, code) { ImGui::PushStyleVar(style, vec); { code } ImGui::PopStyleVar(); }
+#define StyleWrap(style, color, code) { ImGui::PushStyleColor(style, color); { code } ImGui::PopStyleColor(); }
+
+#define LIGHT_GRAY IM_COL32(192, 192, 192, 255)
+#define LIGHT_ROSE IM_COL32(0xFF, 0x99, 0xC8, 0xFF)
+#define LIGHT_YELLOW IM_COL32(0xFC, 0xF6, 0xBD, 0xFF)
+#define LIGHT_GREEN IM_COL32(0xD0, 0xF4, 0xDE, 0xFF)
+#define LIGHT_BLUE IM_COL32(0xA9, 0xDE, 0xF9, 0xFF)
+#define LIGHT_PURPLE IM_COL32(0xE4, 0xC1, 0xF9, 0xFF)
+
+ImFont *textFont = nullptr;
+ImFont *iconFont = nullptr;
 
 // Global variables
 HWND hwnd = nullptr;  // Window handle
 HDC hdc = nullptr;    // Device context
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 // Window procedure to handle window messages
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+	// Crucial: Add ImGui message handling
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
+		return true;
+
 	switch (uMsg) {
-	case WM_SIZE:
-	case WM_SYSCOMMAND:
 	case WM_CLOSE:
-		// Handle window close
 		PostQuitMessage(0);
 		return 0;
+
+	case WM_SIZE: {
+		int width = LOWORD(lParam);  // Client area width
+		int height = HIWORD(lParam); // Client area height
+		if (wParam != SIZE_MINIMIZED) {
+			glViewport(0, 0, width, height); // Update OpenGL viewport
+		}
+		return 0;
 	}
+
+	case WM_SYSCOMMAND:
+		if ((wParam & 0xFFF0) == SC_CLOSE) {
+			PostQuitMessage(0); // Close the application
+			return 0;
+		}
+		break;
+	}
+
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 namespace edit
 {
+
+	inline void AddSpace(int spaceCount)
+	{
+		for (int i = 0; i < spaceCount; ++i)
+			ImGui::Spacing();
+	}
 
 	EditorWindow::EditorWindow(const std::string &_name, bool _isToggleable)
 		: name(_name), isToggleable(_isToggleable)
@@ -58,28 +113,178 @@ namespace edit
 		return isToggleable;
 	}
 
-	Inspector::Inspector(const std::string &_name, bool _isToggleable)
+	ImageLoader::ImageLoader(const std::string &_name, bool _isToggleable)
 		: EditorWindow(_name, _isToggleable)
 	{
 
 	}
 
-	void Inspector::OnEnter()
+	void ImageLoader::OnEnter()
 	{
 
 	}
 
-	void Inspector::OnUpdate()
+	void ImageLoader::OnUpdate()
+	{
+		//ImGuiWindowClass windowClass;
+		//windowClass.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
+		//ImGui::SetNextWindowClass(&windowClass);
+
+		ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoDecoration);
+		ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
+
+		AddSpace(2);
+		ImGui::Text("Double click a file in the list box to open it or drag and drop it into the bar below to load it.");
+		AddSpace(2);
+
+		if (ImGui::BeginListBox("##Files", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing())))
+		{
+			size_t count = 0;
+
+			for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator("assets/images"))
+			{
+				if (ImGui::Selectable((entry.path().filename().string() + "##ListBox").c_str(), count == selected))
+					selected = count;
+
+				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemClicked())
+					ShellExecute(0, 0, entry.path().wstring().c_str(), 0, 0, SW_SHOW);
+
+				if (ImGui::BeginDragDropSource())
+				{
+					std::string payload = entry.path().string();
+					ImGui::SetDragDropPayload("File_Payload", payload.c_str(), payload.size(), ImGuiCond_Once);
+					ImGui::Text("%s", entry.path().filename().string().c_str());
+					ImGui::EndDragDropSource();
+				}
+
+				++count;
+			}
+
+			ImGui::EndListBox();
+		}
+
+		AddSpace(2);
+		ImGui::InputText("##InputFile", &loadedFile, ImGuiInputTextFlags_ReadOnly);
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("File_Payload"))
+			{
+				std::filesystem::path asset = std::string(static_cast<const char *>(payload->Data), payload->DataSize);
+				if ((asset.extension() == ".png" || asset.extension() == ".jpg") && std::filesystem::exists(asset))
+					loadedFile = asset.filename().string();
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::SameLine();
+		IconWrap(ImGui::Button(ICON_FA_MINUS "##Remove_File");)
+		if (ImGui::IsItemClicked())
+			loadedFile = "No file selected";
+
+		ImGui::PopTextWrapPos();
+		ImGui::End();
+	}
+
+	void ImageLoader::OnExit()
+	{
+
+	}
+
+	SeamCarver::SeamCarver(const std::string &_name, bool _isToggleable)
+		: EditorWindow(_name, _isToggleable)
+	{
+
+	}
+
+	void SeamCarver::OnEnter()
+	{
+
+	}
+
+	void SeamCarver::OnUpdate()
 	{
 		ImGui::Begin(name.c_str());
+		AddSpace(2);
 
-		//std::cout << "hello\n";
-		ImGui::Text("hi");
+		static float width = 0, height = 0;
+
+		ImGui::RadioButton("Carve to Size", &carveSelected, CARVE_TO_SIZE);
+		AddSpace(1);
+
+		if (carveSelected != CARVE_TO_SIZE)
+			ImGui::BeginDisabled();
+
+		ImGui::SliderFloat("Target Width", &width, 0.f, 1920.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SliderFloat("Target Height", &height, 0.f, 1080.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+		if (ImGui::BeginCombo("Algorithm", modes[modeSelected]))
+		{
+			for (size_t i = 0; i < modes.size(); ++i)
+				if (ImGui::Selectable(modes[i], i == modeSelected))
+					modeSelected = i;
+
+			ImGui::EndCombo();
+		}
+
+		if (carveSelected != CARVE_TO_SIZE)
+			ImGui::EndDisabled();
+
+		AddSpace(2);
+		ImGui::RadioButton("Object Removal", &carveSelected, OBJECT_REMOVAL);
+		AddSpace(1);
+
+		if (carveSelected != OBJECT_REMOVAL)
+			ImGui::BeginDisabled();
+
+		ImGui::Button("Test");
+
+		if (carveSelected != OBJECT_REMOVAL)
+			ImGui::EndDisabled();
 
 		ImGui::End();
 	}
 
-	void Inspector::OnExit()
+	void SeamCarver::OnExit()
+	{
+
+	}
+
+	WindowsManager::WindowsManager(const std::string &_name, bool _isToggleable)
+		: EditorWindow(_name, _isToggleable)
+	{
+
+	}
+
+	void WindowsManager::OnEnter()
+	{
+
+	}
+
+	void WindowsManager::OnUpdate()
+	{
+		ImGui::Begin(name.c_str());
+		AddSpace(2);
+
+		ImGui::Checkbox("Show Original Image", &shldOpenOriginalImage);
+		ImGui::Checkbox("Show Carved Image", &shldOpenCarvedImage);
+		ImGui::Checkbox("Show All Seams", &shldOpenAllSeams);
+		ImGui::Checkbox("Show Energy Map", &shldOpenEnergyMap);
+		ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
+
+		AddSpace(2);
+		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");
+
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("Set the width of all windows to this value. Their resultant heights will be calculated from their resolution.");
+		ImGui::Text("Resolution: 1920 * 1080");
+
+		ImGui::End();
+	}
+
+	void WindowsManager::OnExit()
 	{
 
 	}
@@ -87,20 +292,21 @@ namespace edit
 	void Editor::Init()
 	{
 		// Register window class
-		const wchar_t *className = L"ImGuiWindowClass";
+		const wchar_t *className = L"Inspector";
 		WNDCLASS wc = { };
 		wc.lpfnWndProc = WindowProc;
 		wc.hInstance = GetModuleHandle(nullptr);
 		wc.lpszClassName = className;
 		RegisterClass(&wc);
+		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-		// Create the window
 		hwnd = CreateWindowEx(
 			0,
 			className,
-			L"ImGui Window",
+			L"Inspector",
 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+			CW_USEDEFAULT, CW_USEDEFAULT,
+			1200, 900, // Increase logical window size for high resolution
 			nullptr, nullptr, wc.hInstance, nullptr
 		);
 
@@ -108,13 +314,15 @@ namespace edit
 		PIXELFORMATDESCRIPTOR pfd = { };
 		pfd.nSize = sizeof(pfd);
 		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		pfd.cAccumBits = 64; // Accumulation buffer bits for high-quality rendering
+		pfd.dwFlags |= PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_SWAP_COPY | PFD_SUPPORT_COMPOSITION;
 		pfd.iPixelType = PFD_TYPE_RGBA;
 		pfd.cColorBits = 32;
 		pfd.cRedBits = 8;
 		pfd.cGreenBits = 8;
 		pfd.cBlueBits = 8;
 		pfd.cAlphaBits = 8;
+		pfd.cDepthBits = 24;   // Depth buffer precision
 		pfd.iLayerType = PFD_MAIN_PLANE;
 
 		hdc = GetDC(hwnd);
@@ -131,9 +339,12 @@ namespace edit
 		Configure();
 
 		ImGui_ImplWin32_Init(hwnd);
+		ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 		ImGui_ImplOpenGL3_Init("#version 330 core");
 
-		AddWindow<Inspector>(true, true);
+		AddWindow<ImageLoader>(true, true);
+		AddWindow<SeamCarver>(true, true);
+		AddWindow<WindowsManager>(true, true);
 	}
 
 	void Editor::Shutdown()
@@ -146,6 +357,18 @@ namespace edit
 
 	void Editor::Update()
 	{
+		// Process all pending Windows messages
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		// Clear the screen
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// Start ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -190,7 +413,9 @@ namespace edit
 	void Editor::Configure()
 	{
 		ImGuiIO &io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF("../Project/Exported/Fonts/Quicksand-Regular.ttf", 27.f);
+		static constexpr ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };  // Load Font Awesome icons in this range
+		textFont = io.Fonts->AddFontFromFileTTF("assets/fonts/Quicksand-Regular.ttf", 27.f);
+		iconFont = io.Fonts->AddFontFromFileTTF("assets/fonts/Font Awesome 5 Free-Solid-900.otf", 24.f, nullptr, iconRanges);
 		io.WantCaptureMouse = true;
 
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
