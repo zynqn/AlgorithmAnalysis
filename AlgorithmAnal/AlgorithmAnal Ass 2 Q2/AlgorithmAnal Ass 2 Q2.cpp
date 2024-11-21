@@ -13,6 +13,7 @@
 #include "SeamCarving2.h"
 #include "Utility2.h"
 #include "Editor.h"
+#include "WinManager.h"
 
 // graph
 #include "matplotlibcpp.h"
@@ -22,6 +23,8 @@
 namespace plt = matplotlibcpp;
 
 edit::Editor editor;
+
+WinManager winManager;
 
 void plotter(std::vector<std::vector<double>> X, std::vector<std::vector<double>> Y, std::vector<std::vector<double>> Z)
 {
@@ -91,8 +94,10 @@ int main()
 		// ===================
 
 		resolution = static_cast<float>(rows) / static_cast<float>(cols);
-		cv::imshow(ORIGINAL_IMAGE, originalImg);
-		cv::imshow("Original Energy Map", displayEnergyMap);
+		cv::imshow(ORIGINAL_IMAGE, img);
+		winManager.OIWin = true;
+		cv::imshow(ORIGINAL_ENERGY_MAP, displayEnergyMap);
+		winManager.EMWin = true;
 
 		// clone the original image for the seam carving
 		imgClone = originalImg.clone();
@@ -130,7 +135,9 @@ int main()
 
 #endif
 
+		winManager.UpdateOIWin(editor.GetWindow<edit::WindowsManager>()->shldOpenOriginalImage, img);
 
+		winManager.UpdateEMWin(editor.GetWindow<edit::WindowsManager>()->shldOpenEnergyMap, displayEnergyMap);
 
 		if (key == 'h')
 			HorizontalSeamCarvingGreedy(imgClone, 500);
