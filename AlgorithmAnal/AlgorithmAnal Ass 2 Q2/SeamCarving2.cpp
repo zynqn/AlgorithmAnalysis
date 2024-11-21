@@ -40,7 +40,7 @@ bool ModifyMask(std::vector<util::Mask> &area, const std::vector<int> &seam)
 			--slice.size;
 
 		// mask is gone when all slices have a size of THRESHOLD or less
-		if (slice.size > THRESHOLD)
+		if (slice.size > threshold)
 			isMaskGone = false;
 	}
 
@@ -103,7 +103,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			std::vector<cv::Mat> channels;
 			cv::split(imgVertical, channels);
 			cv::Mat energyMap = CalculateEnergyMap(channels);
-			ModifyVerticalEnergyMap(energyMap, toRemove, MIN);
+			ModifyVerticalEnergyMap(energyMap, toRemove, -min);
 
 			cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
 			std::vector<int> seam = FindVerticalSeamDP(cumMap);
@@ -144,7 +144,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			std::vector<cv::Mat> channels;
 			cv::split(imgHorizontal, channels);
 			cv::Mat energyMap = CalculateEnergyMap(channels);
-			ModifyHorizontalEnergyMap(energyMap, toRemove, MIN);
+			ModifyHorizontalEnergyMap(energyMap, toRemove, -min);
 
 			cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
 			std::vector<int> seam = FindHorizontalSeamDP(cumMap);
@@ -189,7 +189,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			std::vector<cv::Mat> channels;
 			cv::split(img, channels);
 			cv::Mat energyMap = CalculateEnergyMap(channels);
-			ModifyVerticalEnergyMap(energyMap, toRemove, MIN);
+			ModifyVerticalEnergyMap(energyMap, toRemove, -min);
 
 			cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
 			std::vector<int> seam = FindVerticalSeamDP(cumMap);
@@ -227,7 +227,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			std::vector<cv::Mat> channels;
 			cv::split(img, channels);
 			cv::Mat energyMap = CalculateEnergyMap(channels);
-			ModifyHorizontalEnergyMap(energyMap, toRemove, MIN);
+			ModifyHorizontalEnergyMap(energyMap, toRemove, -min);
 
 			cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
 			std::vector<int> seam = FindHorizontalSeamDP(cumMap);

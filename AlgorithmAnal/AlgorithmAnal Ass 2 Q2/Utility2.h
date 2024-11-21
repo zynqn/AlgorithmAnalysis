@@ -21,8 +21,7 @@
 #define WHITESPACE " \n\t\r\v\f"
 
 constexpr double MAX = std::numeric_limits<double>::max(); // MAX was 255
-constexpr double MIN = -2000.0;
-constexpr int THRESHOLD = 8;
+//constexpr double MIN = -2000.0;
 
 #ifdef _DEBUG
 #define WRAP(x) x
@@ -31,6 +30,8 @@ constexpr int THRESHOLD = 8;
 #endif
 
 // global variables
+inline float min = 2000.f;
+inline int threshold = 8;
 inline cv::Mat brushMask;
 inline bool isDrawing = false;
 inline int brushSize = 5;

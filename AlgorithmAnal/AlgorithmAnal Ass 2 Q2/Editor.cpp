@@ -363,6 +363,16 @@ namespace edit
 		if (carveSelected != OBJECT_REMOVAL)
 			ImGui::BeginDisabled();
 
+		ImGui::SliderInt("Threshold", &threshold, 0, 50, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("The larger this value, the looser the bound of the removal area.");
+
+		ImGui::SliderFloat("Aggressiveness", &min, 0.f, 5000.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("The larger this value, the more the algorithm prioritises on removing the area.");
+
 		if (carveSelected != OBJECT_REMOVAL)
 			ImGui::EndDisabled();
 
