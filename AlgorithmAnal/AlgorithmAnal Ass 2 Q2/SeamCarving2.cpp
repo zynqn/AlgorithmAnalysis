@@ -540,9 +540,9 @@ void HorizontalSeamCarvingDP(cv::Mat& img, int targetHeight)
 		// recalculate energy map
 		cv::Mat energyMap = CalculateEnergyMap(channels);
 		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
-		cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
+		energyMap = CalculateHorizontalCumMap(energyMap);
 
-		std::vector<int> seam = FindHorizontalSeamDP(cumMap);
+		std::vector<int> seam = FindHorizontalSeamDP(energyMap);
 		VisualizeHorizontalSeam(img, seam, (0, 0, 255));
 		RemoveHorizontalSeam(img, seam);
 

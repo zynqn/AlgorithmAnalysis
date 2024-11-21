@@ -73,8 +73,8 @@ int main()
     cv::imshow("Original Image", img);
     cv::imshow("Original Energy Map", displayEnergyMap);
 
-    cv::moveWindow("Original Image", 0, 45);
-    cv::moveWindow("Original Energy Map", img.cols, 45);
+    //cv::moveWindow("Original Image", 0, 45);
+    //cv::moveWindow("Original Energy Map", img.cols, 45);
 
     // clone the original image for the seam carving
     cv::Mat imgClone = img.clone();
