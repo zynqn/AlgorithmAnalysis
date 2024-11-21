@@ -8,7 +8,7 @@
 
 // maxflow graph (for cut graph)
 #include "graph.h"
-#include "graph.cpp"
+//#include "graph.cpp"
 
 // =============
 // OBJECT REMOVAL
@@ -269,67 +269,71 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 	int rows = energyMap.rows;
 	int cols = energyMap.cols;
 
-	// graph with nodes (rows * cols : no. of nodes) (row - 1) * cols * 3 : no. edges 
-	maxflow::Graph<float, float, float> graph(rows * cols, (rows - 1) * cols * 3);
+	// graph with nodes
+	maxflow::Graph<float, float, float> graph(rows * cols, rows * cols * 2);
 
-	// add node (1 pixel is 1 video)
-	for (int i{}; i < rows * cols; ++i)
-		graph.add_node();
+	// add nodes to the graph
+	graph.add_node(rows * cols);
 
+	// lambda function to get the node index
+	auto index = [=](int r, int c) { return r * cols + c; };
 
-	for (int i{}; i < cols; ++i)
+	// add edges
+	for (int r{}; r < rows; ++r)
 	{
-		// connect first row to the source with its energy values 
-		graph.add_tweights(i, static_cast<float>(energyMap.at<double>(0, i)), 0);
-
-		// connect last row to sink with zero weights
-		graph.add_tweights((rows - 1) * cols + i, 0, INT_MAX);
-	}
-
-	
-	// add edge (3 edges)
-	for (int row{}; row < rows - 1; ++row)
-	{
-		for (int col{}; col < cols; ++col)
+		for (int c{}; c < cols; ++c)
 		{
-			int currNode = row * cols + col;
-			float edgeWeight = static_cast<float>(energyMap.at<double>(row + 1, col));
+			// ensure we are not at the last row (vertical edge)
+			if (r < rows - 1)
+			{
+				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c);
+				graph.add_edge(index(r, c), index(r + 1, c), weight, weight);
+			}
 
-			// vertical edge
-			graph.add_edge(currNode, (row + 1) * cols + col, edgeWeight, edgeWeight);
+			// ensure we are not at the left most col (diagonal left edge)
+			if (r < rows - 1 && c > 0)
+			{
+				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c - 1);
+				graph.add_edge(index(r, c), index(r + 1, c - 1), weight, weight);
+			}
 
-			// diagonal edge
-			if (col > 0)
-				graph.add_edge(currNode, (row + 1) * cols + (col - 1), edgeWeight, edgeWeight);
-
-			if (col < cols - 1)
-				graph.add_edge(currNode, (row + 1) * cols + (col + 1), edgeWeight, edgeWeight);
-
+			// ensure we are not at the right most col (diagonal right edge)
+			if (r < rows - 1 && c < cols - 1)
+			{
+				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c + 1);
+				graph.add_edge(index(r, c), index(r + 1, c + 1), weight, weight);
+			}
 		}
 	}
 
-	// find minimum cut
+	// connect source and sink
+	for (int r{}; r < rows; ++r)
+	{
+		graph.add_tweights(index(r, 0), 1e9, 0); // source connect to first column
+		graph.add_tweights(index(r, cols - 1), 0, 1e9); // last column to sink
+	}
+
+	// compute max flow
 	float flow = graph.maxflow();
 
-	std::cout << "flow: " << flow << '\n';
 
 	std::vector<int> seam(rows);
 
-	for (int row{}; row < rows; ++row)
+	for (int r{}; r < rows; ++r)
 	{
-		for (int col{}; col < cols; ++col)
+		for (int c{}; c < cols; ++c)
 		{
-			int nodeID = row * cols + col;
-			if (graph.what_segment(nodeID) == maxflow::Graph<float, float, float>::SOURCE)
+			if (graph.what_segment(index(r, c)) == maxflow::Graph<float, float, float>::SINK)
 			{
-				seam[row] = col;
+				seam[r] = c;
 				break;
 			}
 		}
 	}
-	
+
 	return seam;
 }
+
 
 void RemoveVerticalSeam(cv::Mat &img, std::vector<int> const &seam)
 {
@@ -342,7 +346,6 @@ void RemoveVerticalSeam(cv::Mat &img, std::vector<int> const &seam)
 		int seamCol = seam[row];
 		for (int col = seamCol; col < cols - 1; ++col)
 			img.at<cv::Vec3b>(row, col) = img.at<cv::Vec3b>(row, col + 1);
-
 	}
 
 	// resize the whole image 
@@ -368,7 +371,7 @@ void VerticalSeamCarvingGreedy(cv::Mat &img, int targetWidth)
 
 		std::vector<int> seam = FindVerticalSeamGreedy(energyMap);
 
-		VisualizeVerticalSeam(img, seam, (0, 0, 255), 50);
+		VisualizeVerticalSeam(img, seam, (0, 0, 255));
 		RemoveVerticalSeam(img, seam);
 	}
 }
@@ -381,7 +384,7 @@ void VerticalSeamCarvingDP(cv::Mat &img, int targetWidth)
 		return;
 	}
 
-	while (img.cols < targetWidth)
+	while (img.cols > targetWidth)
 	{
 		std::vector<cv::Mat> channels;
 		cv::split(img, channels); // channels[0] = blue, channels[1] = green, channels[2] = red
@@ -417,7 +420,7 @@ void VerticalSeamCarvingGraphCut(cv::Mat& img, int targetWidth)
 
 		std::vector<int> seam = FindVerticalSeamGraphCut(energyMap);
 
-		VisualizeVerticalSeam(img, seam, (255, 0, 255), 50);
+		VisualizeVerticalSeam(img, seam, (255, 0, 255));
 		RemoveVerticalSeam(img, seam);
 	}
 }
@@ -488,6 +491,76 @@ std::vector<int> FindHorizontalSeamDP(cv::Mat &cumMap)
 	return seam;
 }
 
+std::vector<int> FindHorizontalSeamGraphCut(cv::Mat const& energyMap)
+{
+	int rows = energyMap.rows;
+	int cols = energyMap.cols;
+
+	// graph with nodes
+	maxflow::Graph<float, float, float> graph(rows * cols, rows * cols * 3);
+
+	// add nodes to the graph
+	graph.add_node(rows * cols);
+
+	// lambda function to get the node index
+	auto index = [=](int r, int c) { return r * cols + c; };
+
+	// add edges
+	for (int r{}; r < rows; ++r)
+	{
+		for (int c{}; c < cols; ++c)
+		{
+			// ensure we are not at the last col (vertical edge)
+			if (c < cols - 1)
+			{
+				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r, c + 1);
+				graph.add_edge(index(r, c), index(r, c + 1), weight, weight);
+			}
+
+			// ensure we are not at the first row (diagonal up edge)
+			if (c < cols - 1 && r > 0)
+			{
+				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r - 1, c + 1);
+				graph.add_edge(index(r, c), index(r - 1, c + 1), weight, weight);
+			}
+
+			// ensure we are not at the last row (diagonal down edge)
+			if (c < cols - 1 && r < rows - 1)
+			{
+				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c + 1);
+				graph.add_edge(index(r, c), index(r + 1, c + 1), weight, weight);
+			}
+		}
+	}
+
+	// connect source and sink
+	for (int c{}; c < cols; ++c)
+	{
+		graph.add_tweights(index(0, c), 1e9, 0); // source connect to first row
+		graph.add_tweights(index(rows - 1, c), 0, 1e9); // last row to sink
+	}
+
+	// compute max flow
+	float flow = graph.maxflow();
+
+
+	std::vector<int> seam(cols);
+
+	for (int c{}; c < cols; ++c)
+	{
+		for (int r{}; r < rows; ++r)
+		{
+			if (graph.what_segment(index(r, c)) == maxflow::Graph<float, float, float>::SINK)
+			{
+				seam[c] = r;
+				break;
+			}
+		}
+	}
+
+	return seam;
+}
+
 void RemoveHorizontalSeam(cv::Mat &img, std::vector<int> const &seam)
 {
 	int rows = img.rows;
@@ -534,11 +607,11 @@ void HorizontalSeamCarvingDP(cv::Mat& img, int targetHeight)
 {
 	if (targetHeight >= img.rows)
 	{
-		std::cerr << "Target width is " << targetHeight << " but image height is " << img.rows << nl;
+		std::cerr << "Target height is " << targetHeight << " but image height is " << img.rows << nl;
 		return;
 	}
 
-	while (true)
+	while (img.rows > targetHeight)
 	{
 		std::vector<cv::Mat> channels;
 		cv::split(img, channels); // channels[0] = blue, channels[1] = green, channels[2] = red
@@ -551,9 +624,30 @@ void HorizontalSeamCarvingDP(cv::Mat& img, int targetHeight)
 		std::vector<int> seam = FindHorizontalSeamDP(cumMap);
 		VisualizeHorizontalSeam(img, seam, (0, 0, 255));
 		RemoveHorizontalSeam(img, seam);
+	}
+}
 
-		if (img.rows <= targetHeight)
-			break;
+void HorizontalSeamCarvingGraphCut(cv::Mat& img, int targetHeight)
+{
+	if (targetHeight >= img.rows)
+	{
+		std::cerr << "Target height must be smaller than the current width!\n";
+		return;
+	}
+
+	while (img.rows > targetHeight)
+	{
+		std::vector<cv::Mat> channels;
+
+		cv::split(img, channels); // channels[0] = blue, channels[1] = green, channels[2] = red
+
+		// recalculate energy map
+		cv::Mat energyMap = CalculateEnergyMap(channels);
+
+		std::vector<int> seam = FindHorizontalSeamGraphCut(energyMap);
+
+		VisualizeHorizontalSeam(img, seam, (0, 0, 255), 50);
+		RemoveHorizontalSeam(img, seam);
 	}
 }
 

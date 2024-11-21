@@ -24,7 +24,7 @@ int main()
 	// ==============
 
 	// load the image
-	cv::Mat img = cv::imread("assets/surfer.jpg");
+	cv::Mat img = cv::imread("assets/clock.png");
 
 	// ensure image loaded properly
 	if (img.empty())
@@ -88,7 +88,7 @@ int main()
 			VerticalSeamCarvingGraphCut(imgClone, 500);
 
 		if (key == 'b')
-			HorizontalSeamCarvingDP(imgClone, 400);
+			HorizontalSeamCarvingGraphCut(imgClone, 400);
 
 		if (key == 'd')
 		{

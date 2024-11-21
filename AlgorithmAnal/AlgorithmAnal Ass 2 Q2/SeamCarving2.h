@@ -60,19 +60,21 @@ void VerticalSeamCarvingGraphCut(cv::Mat& img, int targetWidth);
 // - start from left col. At each pixel, choose the pixel with the least energy from the row below (directly right or one pixel to the top/bottom)
 std::vector<int> FindHorizontalSeamGreedy(cv::Mat const &energyMap);
 std::vector<int> FindHorizontalSeamDP(cv::Mat &cumMap);
+std::vector<int> FindHorizontalSeamGraphCut(cv::Mat const& energyMap);
 
 void RemoveHorizontalSeam(cv::Mat const &img, std::vector<int> const &seam);
 
 // perform seam carving on the img to the specified target height
 void HorizontalSeamCarvingGreedy(cv::Mat &img, int targetHeight);
 void HorizontalSeamCarvingDP(cv::Mat &img, int targetHeight);
+void HorizontalSeamCarvingGraphCut(cv::Mat& img, int targetHeight);
 
 // ===============
 // VISUALIZATION
 // ===============
 
-void VisualizeVerticalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 0); // ms was 50
-void VisualizeHorizontalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 0); // ms was 50
+void VisualizeVerticalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 1); // ms was 50
+void VisualizeHorizontalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 1); // ms was 50
 
 void DrawVerticalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 void DrawHorizontalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
