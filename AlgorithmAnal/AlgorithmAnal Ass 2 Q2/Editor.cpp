@@ -77,6 +77,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
+int FilterAlphanumeric(ImGuiInputTextCallbackData *data)
+{
+	// Allow only alphanumeric characters, underscores, and spaces
+	if (std::isalnum(data->EventChar) || data->EventChar == '_' || data->EventChar == ' ')
+		return false; // Accept the character
+	return true; // Reject the character
+}
+
 namespace edit
 {
 
@@ -139,8 +147,12 @@ namespace edit
 		ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
 
 		AddSpace(2);
+		ImGui::SeparatorText("Load");
+		AddSpace(2);
+
 		ImGui::Text("Double click a file in the list box to open it or drag and drop it into the bar below to load it.");
 		AddSpace(2);
+		bool doesFileExist = false;
 
 		if (ImGui::BeginListBox("##Files", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing())))
 		{
@@ -148,7 +160,11 @@ namespace edit
 
 			for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator("assets/images"))
 			{
-				if (ImGui::Selectable((entry.path().filename().string() + "##ListBox").c_str(), count == selected))
+				std::string fileName = entry.path().filename().string();
+				if (newFileName.size() && fileName == newFileName + (ext == PNG ? ".png" : ".jpg"))
+					doesFileExist = true;
+
+				if (ImGui::Selectable((fileName + "##ListBox").c_str(), count == selected))
 					selected = count;
 
 				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemClicked())
@@ -188,9 +204,58 @@ namespace edit
 		}
 
 		ImGui::SameLine();
-		IconWrap(ImGui::Button(ICON_FA_MINUS "##Remove_File");)
+		IconWrap(ImGui::Button(ICON_FA_TRASH_ALT "##Remove_File");)
 		if (ImGui::IsItemClicked())
 			UnloadImage();
+
+		AddSpace(2);
+		ImGui::SeparatorText("Save");
+		AddSpace(2);
+
+		ImGui::InputText("File Name", &newFileName, ImGuiInputTextFlags_CallbackCharFilter, FilterAlphanumeric);
+		if (doesFileExist || newFileName.empty())
+		{
+			ImGui::SameLine();
+			StyleWrap(ImGuiCol_Text, LIGHT_ROSE, IconWrap(ImGui::Text(ICON_FA_EXCLAMATION_CIRCLE);))
+			ImGui::SetItemTooltip(doesFileExist ? "File already exists." : "File name cannot be empty.");
+		}
+
+		if (ImGui::BeginCombo("Extension", exts[ext]))
+		{
+			for (size_t i = 0; i < exts.size(); ++i)
+				if (ImGui::Selectable(exts[i], i == ext))
+					ext = i;
+			ImGui::EndCombo();
+		}
+
+		if (ext == PNG)
+			ImGui::BeginDisabled();
+		ImGui::SliderInt("Compression", &compression, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp);
+		if (ext == PNG)
+			ImGui::EndDisabled();
+
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("The larger the number, the smaller the file but the lower the quality.");
+		AddSpace(2);
+		
+		if (doesFileExist || newFileName.empty())
+			ImGui::BeginDisabled();
+
+		if (ImGui::Button("Save Carved Image"))
+			switch (ext)
+			{
+			case PNG:
+				cv::imwrite("assets/images/" + newFileName + ".png", imgClone);
+				break;
+
+			case JPG:
+				cv::imwrite("assets/images/" + newFileName + ".jpg", imgClone, { cv::IMWRITE_JPEG_QUALITY, 100 - compression });
+				break;
+			}
+
+		if (doesFileExist || newFileName.empty())
+			ImGui::EndDisabled();
 
 		ImGui::PopTextWrapPos();
 		ImGui::End();
@@ -210,22 +275,28 @@ namespace edit
 		// Convert the energy map back to 8-bit format for display
 		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
 		energyMap.convertTo(displayEnergyMap, CV_8U);
-		cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
+		allSeams = cv::Mat();
 
 		rows = energyMap.rows;
 		cols = energyMap.cols;
 		resolution = static_cast<float>(rows) / static_cast<float>(cols);
 		isFileLoaded = true;
 
-		if (winManager.CIWin)
-			cv::destroyWindow(CARVED_IMAGE);
-		if (winManager.ASWin)
-			cv::destroyWindow(ALL_SEAMS);
+		//util::ShowWindow(CARVED_IMAGE_W, false);
+		//util::ShowWindow(ALL_SEAMS_W, false);
+		cv::imshow(ORIGINAL_IMAGE, originalImg);
+		cv::imshow(ENERGY_MAP, displayEnergyMap);
 
 		if (editor.GetWindow<WindowsManager>()->shldOpenOriginalImage)
-			cv::imshow(ORIGINAL_IMAGE, originalImg);
+			util::ShowWindow(ORIGINAL_IMAGE_W, true);
 		if (editor.GetWindow<WindowsManager>()->shldOpenEnergyMap)
-			cv::imshow(ENERGY_MAP, displayEnergyMap);
+			util::ShowWindow(ENERGY_MAP_W, true);
+		if (editor.GetWindow<WindowsManager>()->shldOpenCarvedImage)
+			util::ShowWindow(CARVED_IMAGE_W, true);
+		if (editor.GetWindow<WindowsManager>()->shldOpenAllSeams)
+			util::ShowWindow(ALL_SEAMS_W, true);
+
+		cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
 	}
 
 	void ImageLoader::UnloadImage()
@@ -233,15 +304,18 @@ namespace edit
 		loadedFile = "No file selected";
 		rows = cols = 0;
 		isFileLoaded = false;
+		imgClone = originalImg = displayEnergyMap = energyMap = cv::Mat();
 
-		if (winManager.OIWin)
-			cv::destroyWindow(ORIGINAL_IMAGE);
-		if (winManager.EMWin)
-			cv::destroyWindow(ENERGY_MAP);
-		if (winManager.CIWin)
-			cv::destroyWindow(CARVED_IMAGE);
-		if (winManager.ASWin)
-			cv::destroyWindow(ALL_SEAMS);
+#if 0
+		cv::imshow(ORIGINAL_IMAGE, originalImg);
+		cv::imshow(ENERGY_MAP, displayEnergyMap);
+		cv::imshow(CARVED_IMAGE, imgClone);
+#else
+		util::ShowWindow(ORIGINAL_IMAGE_W, false);
+		util::ShowWindow(ENERGY_MAP_W, false);
+		util::ShowWindow(CARVED_IMAGE_W, false);
+		util::ShowWindow(ALL_SEAMS_W, false);
+#endif
 	}
 
 	SeamCarver::SeamCarver(const std::string &_name, bool _isToggleable)
@@ -295,6 +369,9 @@ namespace edit
 		ImGui::Separator();
 		AddSpace(2);
 
+		if (!editor.GetWindow<ImageLoader>()->isFileLoaded)
+			ImGui::BeginDisabled();
+
 		if (ImGui::Button("Reset"))
 		{
 			imgClone = originalImg.clone();
@@ -308,6 +385,8 @@ namespace edit
 
 		if (ImGui::Button("Carve"))
 		{
+			allSeams = imgClone.clone();
+
 			switch (carveSelected)
 			{
 			case CARVE_TO_SIZE:
@@ -340,9 +419,8 @@ namespace edit
 			resolution = static_cast<float>(rows) / static_cast<float>(cols);
 		}
 
-		AddSpace(1);
-		ImGui::Checkbox("Show Carved Image", &editor.GetWindow<WindowsManager>()->shldOpenCarvedImage);
-		ImGui::Checkbox("Show All Seams", &editor.GetWindow<WindowsManager>()->shldOpenAllSeams);
+		if (!editor.GetWindow<ImageLoader>()->isFileLoaded)
+			ImGui::EndDisabled();
 
 		ImGui::End();
 	}
@@ -371,6 +449,8 @@ namespace edit
 		ImGui::Checkbox("Show Original Image", &shldOpenOriginalImage);
 		ImGui::Checkbox("Show Energy Map", &shldOpenEnergyMap);
 		ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
+		ImGui::Checkbox("Show Carved Image", &shldOpenCarvedImage);
+		ImGui::Checkbox("Show All Seams", &shldOpenAllSeams);
 
 		AddSpace(2);
 		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");

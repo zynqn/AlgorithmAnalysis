@@ -65,6 +65,17 @@ int main()
 	cv::namedWindow(ENERGY_MAP, cv::WINDOW_NORMAL);
 	cv::setWindowProperty(ENERGY_MAP, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
 
+	cv::namedWindow(CARVED_IMAGE, cv::WINDOW_NORMAL);
+	cv::setWindowProperty(CARVED_IMAGE, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
+
+	cv::namedWindow(ALL_SEAMS, cv::WINDOW_NORMAL);
+	cv::setWindowProperty(ALL_SEAMS, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
+
+	util::ShowWindow(ORIGINAL_IMAGE_W, false);
+	util::ShowWindow(ENERGY_MAP_W, false);
+	util::ShowWindow(CARVED_IMAGE_W, false);
+	util::ShowWindow(ALL_SEAMS_W, false);
+
 	//cv::namedWindow(CARVED_IMAGE, cv::WINDOW_NORMAL);
 	//cv::setWindowProperty(CARVED_IMAGE, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
 
@@ -119,6 +130,8 @@ int main()
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 		util::LockWindow(INSPECTOR_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 		util::LockWindow(ENERGY_MAP_W, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 
 #if 0
 		// ===================== 
@@ -149,6 +162,8 @@ int main()
 
 		winManager.UpdateOIWin(editor.GetWindow<edit::WindowsManager>()->shldOpenOriginalImage, originalImg);
 		winManager.UpdateEMWin(editor.GetWindow<edit::WindowsManager>()->shldOpenEnergyMap, displayEnergyMap);
+		winManager.UpdateCIWin(editor.GetWindow<edit::WindowsManager>()->shldOpenCarvedImage, imgClone);
+		winManager.UpdateASWin(editor.GetWindow<edit::WindowsManager>()->shldOpenAllSeams, allSeams);
 
 		if (key == 'h')
 			HorizontalSeamCarvingGreedy(imgClone, 500);

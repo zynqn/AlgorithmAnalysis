@@ -793,41 +793,39 @@ void HorizontalSeamCarvingGraphCut(cv::Mat& img, int targetHeight)
 
 void VisualizeVerticalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour, int waitForMs)
 {
-	static cv::Mat imgClone = img.clone();
-
 	// assign colour to the seam for visualization
 	for (int i{}; i < img.rows; ++i)
 	{
 		img.at<cv::Vec3b>(i, seam[i]) = colour;
-		imgClone.at<cv::Vec3b>(i, seam[i]) = colour;
+		allSeams.at<cv::Vec3b>(i, seam[i]) = colour;
 	}
 
 	if (editor.GetWindow<edit::WindowsManager>()->shldOpenCarvedImage)
 	{
+		util::ShowWindow(CARVED_IMAGE_W, true);
 		cv::imshow(CARVED_IMAGE, img);
-		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 		winManager.CIWin = true;
 	}
 	else
 	{
 		if (winManager.CIWin)
 		{
-			cv::destroyWindow(CARVED_IMAGE);
+			util::ShowWindow(CARVED_IMAGE_W, false);
 			winManager.CIWin = false;
 		}
 	}
 
 	if (editor.GetWindow<edit::WindowsManager>()->shldOpenAllSeams)
 	{
-		cv::imshow(ALL_SEAMS, imgClone);
-		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::ShowWindow(ALL_SEAMS_W, true);
+		cv::imshow(ALL_SEAMS, allSeams);
 		winManager.ASWin = true;
 	}
 	else
 	{
 		if (winManager.ASWin)
 		{
-			cv::destroyWindow(ALL_SEAMS);
+			util::ShowWindow(ALL_SEAMS_W, false);
 			winManager.ASWin = false;
 		}
 	}
@@ -837,19 +835,17 @@ void VisualizeVerticalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b
 
 void VisualizeHorizontalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour, int waitForMs)
 {
-	static cv::Mat imgClone = img.clone();
-
 	// assign colour to the seam for visualization
 	for (int i{}; i < img.cols; ++i)
 	{
 		img.at<cv::Vec3b>(seam[i], i) = colour;
-		imgClone.at<cv::Vec3b>(seam[i], i) = colour;
+		allSeams.at<cv::Vec3b>(seam[i], i) = colour;
 	}
 
 	if (editor.GetWindow<edit::WindowsManager>()->shldOpenCarvedImage)
 	{
 		cv::imshow(CARVED_IMAGE, img);
-		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + imgClone.cols, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), img.cols, img.rows);
+		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + allSeams.cols, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), img.cols, img.rows);
 		winManager.CIWin = true;
 	}
 	else
@@ -863,7 +859,7 @@ void VisualizeHorizontalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec
 	
 	if (editor.GetWindow<edit::WindowsManager>()->shldOpenAllSeams)
 	{
-		cv::imshow(ALL_SEAMS, imgClone);
+		cv::imshow(ALL_SEAMS, allSeams);
 		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), imgClone.cols, imgClone.rows);
 		winManager.ASWin = true;
 	}

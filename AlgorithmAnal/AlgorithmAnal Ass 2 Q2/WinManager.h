@@ -21,7 +21,9 @@ public:
 	WinManager();
 
 	void UpdateOIWin(bool toggle, cv::Mat& img);
-	void UpdateEMWin(bool toggle, cv::Mat& img);
+	void UpdateEMWin(bool toggle, cv::Mat &img);
+	void UpdateCIWin(bool toggle, cv::Mat &img);
+	void UpdateASWin(bool toggle, cv::Mat& img);
 
 	bool OIWin = false;
 	bool EMWin = false;

@@ -37,7 +37,7 @@ inline int brushSize = 5;
 inline bool maskInitialized = false;
 inline float resolution = 1.f; // height/width or rows/cols of image (ie for landscape images this will be < 1.f)
 inline int rows = 0, cols = 0;
-inline cv::Mat imgClone, originalImg, energyMap, displayEnergyMap;
+inline cv::Mat imgClone, originalImg, energyMap, displayEnergyMap, allSeams;
 
 // global constants
 inline const std::string ORIGINAL_IMAGE = "Original Image";
@@ -69,10 +69,14 @@ namespace util
 
 	inline void LockWindow(const std::wstring &windowName, int x, int y, int width, int height) 
 	{
-		HWND hwnd = FindWindow(nullptr, windowName.c_str()); // Find OpenCV window handle
-		if (hwnd)
-			// Fix window size and position
+		if (HWND hwnd = FindWindow(nullptr, windowName.c_str()))
 			SetWindowPos(hwnd, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+	}
+
+	inline void ShowWindow(const std::wstring &windowName, bool shldShow)
+	{
+		if (HWND hwnd = FindWindow(nullptr, windowName.c_str()))
+			ShowWindow(hwnd, shldShow ? SW_SHOW : SW_HIDE);
 	}
 
 	inline void initializeBrushMask(const cv::Mat &img)

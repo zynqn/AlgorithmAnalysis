@@ -28,6 +28,13 @@ namespace edit
 		MAX_ALGO
 	};
 
+	enum ExtMode
+	{
+		PNG,
+		JPG,
+		MAX_EXT
+	};
+
 	class EditorWindow
 	{
 	protected:
@@ -55,6 +62,16 @@ namespace edit
 	{
 		size_t selected = 0;
 		std::string loadedFile = "No file selected";
+
+		size_t ext = PNG;
+		int compression = 100;
+		std::string newFileName;
+
+		const std::array<const char *, MAX_EXT> exts =
+		{
+			"png",
+			"jpg",
+		};
 
 	public:
 
