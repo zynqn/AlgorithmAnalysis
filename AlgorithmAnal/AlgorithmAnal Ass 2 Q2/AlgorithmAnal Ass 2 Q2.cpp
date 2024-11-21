@@ -94,7 +94,7 @@ int main()
 		// ===================
 
 		resolution = static_cast<float>(rows) / static_cast<float>(cols);
-		cv::imshow(ORIGINAL_IMAGE, img);
+		cv::imshow(ORIGINAL_IMAGE, originalImg);
 		winManager.OIWin = true;
 		cv::imshow(ORIGINAL_ENERGY_MAP, displayEnergyMap);
 		winManager.EMWin = true;
