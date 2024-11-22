@@ -24,6 +24,7 @@
     <ProjectGuid>{1598a573-0be3-4eeb-9432-8e6540437498}</ProjectGuid>
     <RootNamespace>AlgorithmAnalAss2Q2</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>AlgorithmAnalysis_Assignment_2_T12.cpp</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -160,9 +161,9 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
     <ClCompile Include="..\lib\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="AlgorithmAnal Ass 2 Q2.cpp" />
+    <ClCompile Include="AlgorithmAnalysis_Assignment_2_T12.cpp" />
     <ClCompile Include="Editor.cpp" />
-    <ClCompile Include="SeamCarving2.cpp" />
+    <ClCompile Include="SeamCarving.cpp" />
     <ClCompile Include="WinManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -178,8 +179,8 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="IconsFontAwesome5.h" />
-    <ClInclude Include="SeamCarving2.h" />
-    <ClInclude Include="Utility2.h" />
+    <ClInclude Include="SeamCarving.h" />
+    <ClInclude Include="Utility.h" />
     <ClInclude Include="WinManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -8,7 +8,7 @@
 #include "gl/GL.h"
 #include "IconsFontAwesome5.h"
 #include "Editor.h"
-#include "SeamCarving2.h"
+#include "SeamCarving.h"
 #include "WinManager.h"
 
 #include <filesystem>

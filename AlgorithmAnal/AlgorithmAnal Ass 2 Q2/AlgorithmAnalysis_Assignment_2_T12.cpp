@@ -10,8 +10,8 @@
 #include <iostream>
 
 // seam carving
-#include "SeamCarving2.h"
-#include "Utility2.h"
+#include "SeamCarving.h"
+#include "Utility.h"
 #include "Editor.h"
 #include "WinManager.h"
 
