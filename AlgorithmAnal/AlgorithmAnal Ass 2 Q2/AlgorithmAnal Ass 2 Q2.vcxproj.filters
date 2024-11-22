@@ -51,6 +51,9 @@
     <ClCompile Include="..\lib\imgui\imgui_impl_win32.cpp">
       <Filter>Resource Files\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="WinManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="matplotlibcpp.h">
@@ -96,6 +99,9 @@
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="IconsFontAwesome5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

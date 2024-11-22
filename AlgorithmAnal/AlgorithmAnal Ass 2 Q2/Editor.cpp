@@ -8,6 +8,8 @@
 #include "gl/GL.h"
 #include "IconsFontAwesome5.h"
 #include "Editor.h"
+#include "SeamCarving2.h"
+#include "WinManager.h"
 
 #include <filesystem>
 
@@ -17,6 +19,9 @@
 
 //todo choose to reset image or not after carving
 //todo expose api for editor
+
+extern WinManager winManager;
+extern edit::Editor editor;
 
 /*! ------------ Function Wrapper Macros ------------ */
 
@@ -41,28 +46,29 @@ HDC hdc = nullptr;    // Device context
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Window procedure to handle window messages
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{
+	// Handle window close messages explicitly before passing to ImGui
+	if (uMsg == WM_CLOSE || (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_CLOSE)) 
+	{
+		PostQuitMessage(0);
+		return 0;
+	}
 
 	// Crucial: Add ImGui message handling
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 		return true;
 
-	switch (uMsg) {
-	case WM_CLOSE:
-		PostQuitMessage(0);
+	switch (uMsg) 
+	{
+	case WM_SIZE: 
+		if (wParam != SIZE_MINIMIZED) 
+			glViewport(0, 0, LOWORD(lParam), HIWORD(lParam)); // Update OpenGL viewport
 		return 0;
-
-	case WM_SIZE: {
-		int width = LOWORD(lParam);  // Client area width
-		int height = HIWORD(lParam); // Client area height
-		if (wParam != SIZE_MINIMIZED) {
-			glViewport(0, 0, width, height); // Update OpenGL viewport
-		}
-		return 0;
-	}
 
 	case WM_SYSCOMMAND:
-		if ((wParam & 0xFFF0) == SC_CLOSE) {
+		if ((wParam & 0xFFF0) == SC_CLOSE) 
+		{
 			PostQuitMessage(0); // Close the application
 			return 0;
 		}
@@ -70,6 +76,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+int FilterAlphanumeric(ImGuiInputTextCallbackData *data)
+{
+	// Allow only alphanumeric characters, underscores, and spaces
+	if (std::isalnum(data->EventChar) || data->EventChar == '_' || data->EventChar == ' ')
+		return false; // Accept the character
+	return true; // Reject the character
 }
 
 namespace edit
@@ -134,8 +148,12 @@ namespace edit
 		ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
 
 		AddSpace(2);
+		ImGui::SeparatorText("Load");
+		AddSpace(1);
+
 		ImGui::Text("Double click a file in the list box to open it or drag and drop it into the bar below to load it.");
-		AddSpace(2);
+		AddSpace(1);
+		bool doesFileExist = false;
 
 		if (ImGui::BeginListBox("##Files", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing())))
 		{
@@ -143,7 +161,11 @@ namespace edit
 
 			for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator("assets/images"))
 			{
-				if (ImGui::Selectable((entry.path().filename().string() + "##ListBox").c_str(), count == selected))
+				std::string fileName = entry.path().filename().string();
+				if (newFileName.size() && fileName == newFileName + (ext == PNG ? ".png" : ".jpg"))
+					doesFileExist = true;
+
+				if (ImGui::Selectable((fileName + "##ListBox").c_str(), count == selected))
 					selected = count;
 
 				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemClicked())
@@ -163,7 +185,7 @@ namespace edit
 			ImGui::EndListBox();
 		}
 
-		AddSpace(2);
+		AddSpace(1);
 		ImGui::InputText("##InputFile", &loadedFile, ImGuiInputTextFlags_ReadOnly);
 
 		if (ImGui::BeginDragDropTarget())
@@ -172,16 +194,69 @@ namespace edit
 			{
 				std::filesystem::path asset = std::string(static_cast<const char *>(payload->Data), payload->DataSize);
 				if ((asset.extension() == ".png" || asset.extension() == ".jpg") && std::filesystem::exists(asset))
+				{
 					loadedFile = asset.filename().string();
+					imgClone = originalImg = cv::imread(asset.string());
+					LoadImage();
+				}
 			}
 
 			ImGui::EndDragDropTarget();
 		}
 
 		ImGui::SameLine();
-		IconWrap(ImGui::Button(ICON_FA_MINUS "##Remove_File");)
+		IconWrap(ImGui::Button(ICON_FA_TRASH_ALT "##Remove_File");)
 		if (ImGui::IsItemClicked())
-			loadedFile = "No file selected";
+			UnloadImage();
+
+		AddSpace(2);
+		ImGui::SeparatorText("Save");
+		AddSpace(1);
+
+		ImGui::InputText("File Name", &newFileName, ImGuiInputTextFlags_CallbackCharFilter, FilterAlphanumeric);
+		if (doesFileExist || newFileName.empty())
+		{
+			ImGui::SameLine();
+			StyleWrap(ImGuiCol_Text, LIGHT_ROSE, IconWrap(ImGui::Text(ICON_FA_EXCLAMATION_CIRCLE);))
+			ImGui::SetItemTooltip(doesFileExist ? "File already exists." : "File name cannot be empty.");
+		}
+
+		if (ImGui::BeginCombo("Extension", exts[ext]))
+		{
+			for (size_t i = 0; i < exts.size(); ++i)
+				if (ImGui::Selectable(exts[i], i == ext))
+					ext = i;
+			ImGui::EndCombo();
+		}
+
+		if (ext == PNG)
+			ImGui::BeginDisabled();
+		ImGui::SliderInt("Compression", &compression, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp);
+		if (ext == PNG)
+			ImGui::EndDisabled();
+
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("The larger the number, the smaller the file but the lower the quality.");
+		AddSpace(1);
+		
+		if (doesFileExist || newFileName.empty())
+			ImGui::BeginDisabled();
+
+		if (ImGui::Button("Save Carved Image"))
+			switch (ext)
+			{
+			case PNG:
+				cv::imwrite("assets/images/" + newFileName + ".png", imgClone);
+				break;
+
+			case JPG:
+				cv::imwrite("assets/images/" + newFileName + ".jpg", imgClone, { cv::IMWRITE_JPEG_QUALITY, 100 - compression });
+				break;
+			}
+
+		if (doesFileExist || newFileName.empty())
+			ImGui::EndDisabled();
 
 		ImGui::PopTextWrapPos();
 		ImGui::End();
@@ -190,6 +265,58 @@ namespace edit
 	void ImageLoader::OnExit()
 	{
 
+	}
+
+	void ImageLoader::LoadImage()
+	{
+		std::vector<cv::Mat> channels;
+		cv::split(originalImg, channels);  // channels[0] = Blue, channels[1] = Green, channels[2] = Red
+		energyMap = CalculateEnergyMap(channels);
+
+		// Convert the energy map back to 8-bit format for display
+		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
+		energyMap.convertTo(displayEnergyMap, CV_8U);
+		allSeams = cv::Mat();
+
+		rows = energyMap.rows;
+		cols = energyMap.cols;
+		resolution = static_cast<float>(rows) / static_cast<float>(cols);
+		isFileLoaded = true;
+
+		//util::ShowWindow(CARVED_IMAGE_W, false);
+		//util::ShowWindow(ALL_SEAMS_W, false);
+		cv::imshow(ORIGINAL_IMAGE, originalImg);
+		cv::imshow(ENERGY_MAP, displayEnergyMap);
+
+		if (editor.GetWindow<WindowsManager>()->shldOpenOriginalImage)
+			util::ShowWindow(ORIGINAL_IMAGE_W, true);
+		if (editor.GetWindow<WindowsManager>()->shldOpenEnergyMap)
+			util::ShowWindow(ENERGY_MAP_W, true);
+		if (editor.GetWindow<WindowsManager>()->shldOpenCarvedImage)
+			util::ShowWindow(CARVED_IMAGE_W, true);
+		if (editor.GetWindow<WindowsManager>()->shldOpenAllSeams)
+			util::ShowWindow(ALL_SEAMS_W, true);
+
+		cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
+	}
+
+	void ImageLoader::UnloadImage()
+	{
+		loadedFile = "No file selected";
+		rows = cols = 0;
+		isFileLoaded = false;
+		imgClone = originalImg = displayEnergyMap = energyMap = allSeams = cv::Mat();
+
+#if 0
+		cv::imshow(ORIGINAL_IMAGE, originalImg);
+		cv::imshow(ENERGY_MAP, displayEnergyMap);
+		cv::imshow(CARVED_IMAGE, imgClone);
+#else
+		util::ShowWindow(ORIGINAL_IMAGE_W, false);
+		util::ShowWindow(ENERGY_MAP_W, false);
+		util::ShowWindow(CARVED_IMAGE_W, false);
+		util::ShowWindow(ALL_SEAMS_W, false);
+#endif
 	}
 
 	SeamCarver::SeamCarver(const std::string &_name, bool _isToggleable)
@@ -208,16 +335,14 @@ namespace edit
 		ImGui::Begin(name.c_str());
 		AddSpace(2);
 
-		static float width = 0, height = 0;
-
 		ImGui::RadioButton("Carve to Size", &carveSelected, CARVE_TO_SIZE);
 		AddSpace(1);
 
 		if (carveSelected != CARVE_TO_SIZE)
 			ImGui::BeginDisabled();
 
-		ImGui::SliderFloat("Target Width", &width, 0.f, 1920.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-		ImGui::SliderFloat("Target Height", &height, 0.f, 1080.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SliderInt("Target Width", &width, 1, cols, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SliderInt("Target Height", &height, 1, rows, "%d", ImGuiSliderFlags_AlwaysClamp);
 
 		if (ImGui::BeginCombo("Algorithm", modes[modeSelected]))
 		{
@@ -238,9 +363,74 @@ namespace edit
 		if (carveSelected != OBJECT_REMOVAL)
 			ImGui::BeginDisabled();
 
-		ImGui::Button("Test");
+		ImGui::SliderInt("Threshold", &threshold, 0, 50, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("The larger this value, the looser the bound of the removal area.");
+
+		ImGui::SliderFloat("Aggressiveness", &min, 0.f, 5000.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("The larger this value, the more the algorithm prioritises on removing the area.");
 
 		if (carveSelected != OBJECT_REMOVAL)
+			ImGui::EndDisabled();
+
+		AddSpace(2);
+		ImGui::Separator();
+		AddSpace(2);
+
+		if (!editor.GetWindow<ImageLoader>()->isFileLoaded)
+			ImGui::BeginDisabled();
+
+		//if (ImGui::Button("Reset"))
+		//{
+		//	imgClone = allSeams = originalImg.clone();
+		//	brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
+		//	rows = imgClone.rows;
+		//	cols = imgClone.cols;
+		//	resolution = static_cast<float>(rows) / static_cast<float>(cols);
+		//}
+
+		//ImGui::SameLine();
+
+		if (ImGui::Button("Carve"))
+		{
+			allSeams = imgClone.clone();
+
+			switch (carveSelected)
+			{
+			case CARVE_TO_SIZE:
+				switch (modeSelected)
+				{
+				case GREEDY:
+					VerticalSeamCarvingGreedy(imgClone, width);
+					HorizontalSeamCarvingGreedy(imgClone, height);
+					break;
+
+				case DYNAMIC:
+					VerticalSeamCarvingDP(imgClone, width);
+					HorizontalSeamCarvingDP(imgClone, height);
+					break;
+
+				case GRAPH:
+					VerticalSeamCarvingGraphCut(imgClone, width);
+					HorizontalSeamCarvingGraphCut(imgClone, height);
+					break;
+				}
+				break;
+
+			case OBJECT_REMOVAL:
+				ContentAwareRemoval(imgClone);
+				break;
+			}
+
+			rows = imgClone.rows;
+			cols = imgClone.cols;
+			resolution = static_cast<float>(rows) / static_cast<float>(cols);
+		}
+
+		if (!editor.GetWindow<ImageLoader>()->isFileLoaded)
 			ImGui::EndDisabled();
 
 		ImGui::End();
@@ -268,18 +458,22 @@ namespace edit
 		AddSpace(2);
 
 		ImGui::Checkbox("Show Original Image", &shldOpenOriginalImage);
+		ImGui::Checkbox("Show Energy Map", &shldOpenEnergyMap);
+		//ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
 		ImGui::Checkbox("Show Carved Image", &shldOpenCarvedImage);
 		ImGui::Checkbox("Show All Seams", &shldOpenAllSeams);
-		ImGui::Checkbox("Show Energy Map", &shldOpenEnergyMap);
-		ImGui::Checkbox("Show Energy Graph", &shldOpenEnergyGraph);
 
 		AddSpace(2);
-		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");
+		ImGui::Separator();
+		AddSpace(2);
 
-		ImGui::SameLine();
-		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
-		ImGui::SetItemTooltip("Set the width of all windows to this value. Their resultant heights will be calculated from their resolution.");
-		ImGui::Text("Resolution: 1920 * 1080");
+		ImGui::InputFloat("Scale", &scale, 100.f, 1000.f, "%.2f");
+		//ImGui::SameLine();
+		//StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		//ImGui::SetItemTooltip("Set the width of all windows to this value. The resultant heights will be calculated from the resolution.");
+
+		AddSpace(1);
+		ImGui::Text("Resolution: %d * %d", cols, rows);
 
 		ImGui::End();
 	}
@@ -300,15 +494,7 @@ namespace edit
 		RegisterClass(&wc);
 		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-		hwnd = CreateWindowEx(
-			0,
-			className,
-			L"Inspector",
-			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT,
-			1200, 900, // Increase logical window size for high resolution
-			nullptr, nullptr, wc.hInstance, nullptr
-		);
+		hwnd = CreateWindowEx(0, className, className, WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, 1200, 900, nullptr, nullptr, wc.hInstance, nullptr);
 
 		// Set the OpenGL context
 		PIXELFORMATDESCRIPTOR pfd = { };

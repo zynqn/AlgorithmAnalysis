@@ -8,6 +8,8 @@
 
 /*! ------------ Editor Windows ------------ */
 
+#undef LoadImage
+
 namespace edit
 {
 
@@ -24,6 +26,13 @@ namespace edit
 		DYNAMIC,
 		GRAPH,
 		MAX_ALGO
+	};
+
+	enum ExtMode
+	{
+		PNG,
+		JPG,
+		MAX_EXT
 	};
 
 	class EditorWindow
@@ -54,6 +63,16 @@ namespace edit
 		size_t selected = 0;
 		std::string loadedFile = "No file selected";
 
+		size_t ext = PNG;
+		int compression = 100;
+		std::string newFileName;
+
+		const std::array<const char *, MAX_EXT> exts =
+		{
+			"png",
+			"jpg",
+		};
+
 	public:
 
 		ImageLoader(const std::string &_name = "", bool _isToggleable = true);
@@ -61,10 +80,17 @@ namespace edit
 		void OnEnter() override;
 		void OnUpdate() override;
 		void OnExit() override;
+
+		void LoadImage();
+		void UnloadImage();
+
+		bool isFileLoaded = false;
 	};
 
 	class SeamCarver : public EditorWindow
 	{
+		int width = 1.f, height = 1.f;
+
 		const std::array<const char *, MAX_ALGO> modes =
 		{
 			"Greedy",
