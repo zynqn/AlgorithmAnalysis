@@ -271,7 +271,7 @@ void HorizontalSeamCarvingGraphCut(cv::Mat& img, int targetHeight);
  * @param colour A constant reference to the color (cv::Vec3b) of the seam line, defaulting to red (255, 0, 0).
  * @param waitForMs The delay in milliseconds to wait after displaying the visualization, defaulting to 1 ms.
  */
-void VisualizeVerticalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 1); 
+void VisualizeVerticalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0)); 
 
 
 /**
@@ -282,7 +282,7 @@ void VisualizeVerticalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b
  * @param colour A constant reference to the color (cv::Vec3b) of the seam line, defaulting to red (255, 0, 0).
  * @param waitForMs The delay in milliseconds to wait after displaying the visualization, defaulting to 1 ms.
  */
-void VisualizeHorizontalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 1);
+void VisualizeHorizontalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0));
 
 
 /**
