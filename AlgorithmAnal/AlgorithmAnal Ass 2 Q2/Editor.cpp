@@ -52,6 +52,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if (uMsg == WM_CLOSE || (uMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_CLOSE)) 
 	{
 		PostQuitMessage(0);
+		exit(0);
 		return 0;
 	}
 
@@ -70,6 +71,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if ((wParam & 0xFFF0) == SC_CLOSE) 
 		{
 			PostQuitMessage(0); // Close the application
+			exit(0);
 			return 0;
 		}
 		break;
@@ -297,7 +299,8 @@ namespace edit
 		if (editor.GetWindow<WindowsManager>()->shldOpenAllSeams)
 			util::ShowWindow(ALL_SEAMS_W, true);
 
-		cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
+		cv::setMouseCallback(ORIGINAL_IMAGE, mouseCallback, &originalImg);
+		initializeBrushMask(originalImg);
 	}
 
 	void ImageLoader::UnloadImage()
@@ -317,6 +320,19 @@ namespace edit
 		util::ShowWindow(CARVED_IMAGE_W, false);
 		util::ShowWindow(ALL_SEAMS_W, false);
 #endif
+
+		initializeBrushMask(originalImg);
+	}
+
+	void ImageLoader::ReloadImage()
+	{
+		if (std::filesystem::exists("assets/images/" + loadedFile))
+		{
+			imgClone = originalImg = cv::imread("assets/images/" + loadedFile);
+			LoadImage();
+		}
+		else
+			UnloadImage();
 	}
 
 	SeamCarver::SeamCarver(const std::string &_name, bool _isToggleable)
@@ -380,19 +396,18 @@ namespace edit
 		ImGui::Separator();
 		AddSpace(2);
 
+		ImGui::InputInt("Delay per Seam", &waitFor, 1, 10);
+		ImGui::SameLine();
+		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
+		ImGui::SetItemTooltip("Adjust the amount of time taken per seam carve in ms.");
+		AddSpace(1);
+
 		if (!editor.GetWindow<ImageLoader>()->isFileLoaded)
 			ImGui::BeginDisabled();
 
-		//if (ImGui::Button("Reset"))
-		//{
-		//	imgClone = allSeams = originalImg.clone();
-		//	brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
-		//	rows = imgClone.rows;
-		//	cols = imgClone.cols;
-		//	resolution = static_cast<float>(rows) / static_cast<float>(cols);
-		//}
-
-		//ImGui::SameLine();
+		if (ImGui::Button("Reset"))
+			editor.GetWindow<ImageLoader>()->ReloadImage();
+		ImGui::SameLine();
 
 		if (ImGui::Button("Carve"))
 		{
@@ -425,6 +440,7 @@ namespace edit
 				break;
 			}
 
+			maskInitialized = false;
 			rows = imgClone.rows;
 			cols = imgClone.cols;
 			resolution = static_cast<float>(rows) / static_cast<float>(cols);
@@ -676,4 +692,61 @@ namespace edit
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	}
 
+}
+
+void initializeBrushMask(const cv::Mat& img)
+{
+	if (!maskInitialized)
+	{
+		brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
+		maskInitialized = true;
+	}
+}
+
+void drawBrush(cv::Mat& img, cv::Point point)
+{
+	if (brushMask.size() != img.size())
+	{
+		cv::Mat newMask;
+		cv::resize(brushMask, newMask, img.size(), 0, 0, cv::INTER_NEAREST);
+		brushMask = newMask;
+	}
+
+	cv::circle(brushMask, point, brushSize, cv::Scalar(255), -1);
+	cv::Mat displayImg = img.clone();
+	displayImg.setTo(cv::Scalar(0, 0, 255), brushMask);
+	cv::addWeighted(displayImg, 1.0, img, 0.0, 0, displayImg);
+	cv::imshow(ORIGINAL_IMAGE, displayImg);
+}
+
+void mouseCallback(int event, int x, int y, int flags, void* data)
+{
+	cv::Mat* img = (cv::Mat*)data;
+
+	if (!maskInitialized || brushMask.empty())
+	{
+		initializeBrushMask(*img);
+		editor.GetWindow<edit::ImageLoader>()->ReloadImage();
+	}
+
+	if (brushMask.size() != img->size())
+		brushMask = cv::Mat::zeros(img->size(), CV_8UC1);
+
+	switch (event)
+	{
+	case cv::EVENT_LBUTTONDOWN:
+		isDrawing = true;
+		drawBrush(*img, cv::Point(x, y));
+		break;
+
+	case cv::EVENT_MOUSEMOVE:
+		if (isDrawing)
+			drawBrush(*img, cv::Point(x, y));
+		break;
+
+	case cv::EVENT_LBUTTONUP:
+		isDrawing = false;
+		break;
+
+	}
 }

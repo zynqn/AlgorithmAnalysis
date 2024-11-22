@@ -39,6 +39,7 @@ inline bool maskInitialized = false;
 inline float resolution = 1.f; // height/width or rows/cols of image (ie for landscape images this will be < 1.f)
 inline int rows = 0, cols = 0;
 inline cv::Mat imgClone, originalImg, energyMap, displayEnergyMap, allSeams;
+inline int waitFor = 1;
 
 // global constants
 inline const std::string ORIGINAL_IMAGE = "Original Image";
@@ -80,31 +81,6 @@ namespace util
 			ShowWindow(hwnd, shldShow ? SW_SHOW : SW_HIDE);
 	}
 
-	inline void initializeBrushMask(const cv::Mat &img)
-	{
-		if (!maskInitialized)
-		{
-			brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
-			maskInitialized = true;
-		}
-	}
-
-	inline void drawBrush(cv::Mat &img, cv::Point point)
-	{
-		if (brushMask.size() != img.size())
-		{
-			cv::Mat newMask;
-			cv::resize(brushMask, newMask, img.size(), 0, 0, cv::INTER_NEAREST);
-			brushMask = newMask;
-		}
-
-		cv::circle(brushMask, point, brushSize, cv::Scalar(255), -1);
-		cv::Mat displayImg = img.clone();
-		displayImg.setTo(cv::Scalar(0, 0, 255), brushMask);
-		cv::addWeighted(displayImg, 1.0, img, 0.0, 0, displayImg);
-		cv::imshow(ORIGINAL_IMAGE, displayImg);
-	}
-
 	struct Mask
 	{
 		int start = 0;
@@ -138,36 +114,6 @@ namespace util
 
 		return img(roi).clone();  // Return the zoomed image
 	}
-
-	inline void mouseCallback(int event, int x, int y, int flags, void* data)
-	{
-		cv::Mat* img = (cv::Mat*)data;
-
-		if (!maskInitialized || brushMask.empty())
-			initializeBrushMask(*img);
-
-		if (brushMask.size() != img->size())
-			brushMask = cv::Mat::zeros(img->size(), CV_8UC1);
-
-		switch (event)
-		{
-		case cv::EVENT_LBUTTONDOWN:
-			isDrawing = true;
-			drawBrush(*img, cv::Point(x, y));
-			break;
-
-		case cv::EVENT_MOUSEMOVE:
-			if (isDrawing)
-				drawBrush(*img, cv::Point(x, y));
-			break;
-
-		case cv::EVENT_LBUTTONUP:
-			isDrawing = false;
-			break;
-
-		}
-	}
-
 
 	/*! ------------ String Manipulation ------------ */
 

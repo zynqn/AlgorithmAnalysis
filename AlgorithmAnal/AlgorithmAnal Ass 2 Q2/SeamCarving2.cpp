@@ -69,6 +69,7 @@ void ContentAwareRemoval(cv::Mat &img)
 	if (brushMask.empty() || cv::countNonZero(brushMask) == 0)
 		return;
 
+#if 0
 	// Create two temporary images and masks for testing both directions
 	cv::Mat imgVertical = img.clone();
 	cv::Mat imgHorizontal = img.clone();
@@ -108,7 +109,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
 			std::vector<int> seam = FindVerticalSeamDP(cumMap);
 
-			VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255));
+			//VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255));
 			RemoveVerticalSeam(imgVertical, seam);
 			verticalSeams++;
 
@@ -149,7 +150,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
 			std::vector<int> seam = FindHorizontalSeamDP(cumMap);
 
-			VisualizeHorizontalSeam(img, seam, cv::Vec3b(0, 0, 255));
+			// VisualizeHorizontalSeam(img, seam, cv::Vec3b(0, 0, 255));
 			RemoveHorizontalSeam(imgHorizontal, seam);
 			horizontalSeams++;
 
@@ -157,9 +158,34 @@ void ContentAwareRemoval(cv::Mat &img)
 				break;
 		}
 	}
+#endif
+
+	std::vector<util::Mask> toRemove;
+	for (int y = 0; y < brushMask.rows; ++y)
+	{
+		int start = -1;
+		int end = -1;
+
+		uchar* row = brushMask.ptr<uchar>(y);
+		for (int x = 0; x < brushMask.cols; ++x)
+		{
+			if (row[x] > 0)
+			{
+				if (start == -1) start = x;
+				end = x;
+			}
+		}
+
+		if (start != -1 && end != -1)
+			toRemove.push_back({ start, end - start + 1, y });
+	}
+
+	int max = 0;
+	for (const util::Mask& mask : toRemove)
+		max = std::max(max, mask.size);
 
 	// Choose the direction that requires fewer seams
-	bool useVerticalSeams = verticalSeams <= horizontalSeams;
+	bool useVerticalSeams = max < static_cast<int>(toRemove.size());
 
 	// Now perform the actual removal using the better direction
 	if (useVerticalSeams)
@@ -240,7 +266,7 @@ void ContentAwareRemoval(cv::Mat &img)
 		}
 	}
 
-	brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
+	//brushMask = cv::Mat::zeros(img.size(), CV_8UC1);
 }
 
 
@@ -452,8 +478,9 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 	}
 
 	// compute max flow
+	util::BeginProfile();
 	float flow = graph.maxflow();
-
+	util::EndProfile("Max is 13");
 
 	std::vector<int> seam(rows);
 
@@ -488,6 +515,7 @@ void RemoveVerticalSeam(cv::Mat &img, std::vector<int> const &seam)
 
 	// resize the whole image 
 	img = img.colRange(0, cols - 1);
+	cv::imshow(CARVED_IMAGE, imgClone);
 }
 
 void VerticalSeamCarvingGreedy(cv::Mat &img, int targetWidth)
@@ -509,6 +537,7 @@ void VerticalSeamCarvingGreedy(cv::Mat &img, int targetWidth)
 
 		std::vector<int> seam = FindVerticalSeamGreedy(energyMap);
 
+		//if (img.cols + 1 == targetWidth)
 		VisualizeVerticalSeam(img, seam, (0, 0, 255));
 		RemoveVerticalSeam(img, seam);
 	}
@@ -534,6 +563,7 @@ void VerticalSeamCarvingDP(cv::Mat &img, int targetWidth)
 		cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
 		std::vector<int> seam = FindVerticalSeamDP(cumMap);
 
+		//if (img.cols + 1 == targetWidth)
 		VisualizeVerticalSeam(img, seam, (0, 0, 255));
 		RemoveVerticalSeam(img, seam);
 	}
@@ -557,7 +587,7 @@ void VerticalSeamCarvingGraphCut(cv::Mat& img, int targetWidth)
 		cv::Mat energyMap = CalculateEnergyMap(channels);
 
 		std::vector<int> seam = FindVerticalSeamGraphCut(energyMap);
-
+		//if (img.cols + 1 == targetWidth)
 		VisualizeVerticalSeam(img, seam, (255, 0, 255));
 		RemoveVerticalSeam(img, seam);
 	}
@@ -679,7 +709,9 @@ std::vector<int> FindHorizontalSeamGraphCut(cv::Mat const& energyMap)
 	}
 
 	// compute max flow
+	util::BeginProfile();
 	float flow = graph.maxflow();
+	util::EndProfile("Max is 13");
 
 
 	std::vector<int> seam(cols);
@@ -715,6 +747,7 @@ void RemoveHorizontalSeam(cv::Mat &img, std::vector<int> const &seam)
 
 	// resize the whole image 
 	img = img.rowRange(0, rows - 1);
+	cv::imshow(CARVED_IMAGE, imgClone);
 }
 
 void HorizontalSeamCarvingGreedy(cv::Mat& img, int targetHeight)
@@ -736,7 +769,8 @@ void HorizontalSeamCarvingGreedy(cv::Mat& img, int targetHeight)
 
 		std::vector<int> seam = FindHorizontalSeamGreedy(energyMap);
 
-		VisualizeHorizontalSeam(img, seam, (0, 0, 255), 50);
+		//if (img.rows + 1 == targetHeight)
+		VisualizeHorizontalSeam(img, seam, (0, 0, 255));
 		RemoveHorizontalSeam(img, seam);
 	}
 }
@@ -760,6 +794,7 @@ void HorizontalSeamCarvingDP(cv::Mat& img, int targetHeight)
 		energyMap = CalculateHorizontalCumMap(energyMap);
 
 		std::vector<int> seam = FindHorizontalSeamDP(energyMap);
+		//if (img.rows + 1 == targetHeight)
 		VisualizeHorizontalSeam(img, seam, (0, 0, 255));
 		RemoveHorizontalSeam(img, seam);
 	}
@@ -784,7 +819,8 @@ void HorizontalSeamCarvingGraphCut(cv::Mat& img, int targetHeight)
 
 		std::vector<int> seam = FindHorizontalSeamGraphCut(energyMap);
 
-		VisualizeHorizontalSeam(img, seam, (0, 0, 255), 50);
+		//if (img.rows + 1 == targetHeight)
+		VisualizeHorizontalSeam(img, seam, (0, 0, 255));
 		RemoveHorizontalSeam(img, seam);
 	}
 }
@@ -793,7 +829,7 @@ void HorizontalSeamCarvingGraphCut(cv::Mat& img, int targetHeight)
 // VISUALIZATION
 // ===============
 
-void VisualizeVerticalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour, int waitForMs)
+void VisualizeVerticalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour)
 {
 	// assign colour to the seam for visualization
 	for (int i{}; i < img.rows; ++i)
@@ -832,10 +868,10 @@ void VisualizeVerticalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b
 		}
 	}
 
-	cv::waitKey(waitForMs);
+	cv::waitKey(waitFor);
 }
 
-void VisualizeHorizontalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour, int waitForMs)
+void VisualizeHorizontalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec3b const& colour)
 {
 	// assign colour to the seam for visualization
 	for (int i{}; i < img.cols; ++i)
@@ -874,7 +910,7 @@ void VisualizeHorizontalSeam(cv::Mat& img, std::vector<int> const& seam, cv::Vec
 		}
 	}
 
-	cv::waitKey(waitForMs);
+	cv::waitKey(waitFor);
 }
 
 void DrawVerticalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour)

@@ -73,8 +73,8 @@ void HorizontalSeamCarvingGraphCut(cv::Mat& img, int targetHeight);
 // VISUALIZATION
 // ===============
 
-void VisualizeVerticalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 1); // ms was 50
-void VisualizeHorizontalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0), int waitForMs = 1); // ms was 50
+void VisualizeVerticalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0)); // ms was 50
+void VisualizeHorizontalSeam(cv::Mat &img, std::vector<int> const &seam, cv::Vec3b const &colour = (255, 0, 0)); // ms was 50
 
 void DrawVerticalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));
 void DrawHorizontalBoundary(cv::Mat &img, int pos, cv::Vec3b const &colour = (0, 0, 255));

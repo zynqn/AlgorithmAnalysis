@@ -83,6 +83,7 @@ namespace edit
 
 		void LoadImage();
 		void UnloadImage();
+		void ReloadImage();
 
 		bool isFileLoaded = false;
 	};
@@ -168,3 +169,7 @@ namespace edit
 	};
 
 }
+
+void initializeBrushMask(const cv::Mat& img);
+void drawBrush(cv::Mat& img, cv::Point point);
+void mouseCallback(int event, int x, int y, int flags, void* data);

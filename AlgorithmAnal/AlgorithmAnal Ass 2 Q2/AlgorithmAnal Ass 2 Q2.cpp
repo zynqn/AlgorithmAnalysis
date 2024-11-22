@@ -82,8 +82,8 @@ int main()
 	//cv::namedWindow(ALL_SEAMS, cv::WINDOW_NORMAL);
 	//cv::setWindowProperty(ALL_SEAMS, cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
 
-	brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
-	maskInitialized = true;
+	//brushMask = cv::Mat::zeros(originalImg.size(), CV_8UC1);
+	//maskInitialized = true;
 
 	// set mouse callback (to display the mouse coordinates as will as the respective RGB values of selected pixel)
 	//cv::setMouseCallback(ORIGINAL_IMAGE, util::mouseCallback, &originalImg);
@@ -130,8 +130,8 @@ int main()
 		util::LockWindow(ORIGINAL_IMAGE_W, 0, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 		util::LockWindow(INSPECTOR_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 		util::LockWindow(ENERGY_MAP_W, 0, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
-		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
-		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
+		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 
 #if 0
 		// ===================== 
