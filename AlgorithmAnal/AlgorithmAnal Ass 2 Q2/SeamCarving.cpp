@@ -217,7 +217,7 @@ void ContentAwareRemoval(cv::Mat &img)
 	// Now perform the actual removal using the better direction
 	if (useVerticalSeams)
 	{
-		std::vector<util::Mask> toRemove;
+		std::vector<util::Mask> toRemoveVer;
 		for (int y = 0; y < brushMask.rows; ++y)
 		{
 			int start = -1;
@@ -234,15 +234,15 @@ void ContentAwareRemoval(cv::Mat &img)
 			}
 
 			if (start != -1 && end != -1)
-				toRemove.push_back({ start, end - start + 1, y });
+				toRemoveVer.push_back({ start, end - start + 1, y });
 		}
 
-		while (!toRemove.empty())
+		while (!toRemoveVer.empty())
 		{
 			std::vector<cv::Mat> channels;
 			cv::split(img, channels);
 			cv::Mat energyMap = CalculateEnergyMap(channels);
-			ModifyVerticalEnergyMap(energyMap, toRemove, -min);
+			ModifyVerticalEnergyMap(energyMap, toRemoveVer, -min);
 
 			cv::Mat cumMap = CalculateVerticalCumMap(energyMap);
 			std::vector<int> seam = FindVerticalSeamDP(cumMap);
@@ -250,13 +250,13 @@ void ContentAwareRemoval(cv::Mat &img)
 			VisualizeVerticalSeam(img, seam, cv::Vec3b(0, 0, 255));
 			RemoveVerticalSeam(img, seam);
 
-			if (ModifyMask(toRemove, seam))
+			if (ModifyMask(toRemoveVer, seam))
 				break;
 		}
 	}
 	else
 	{
-		std::vector<util::Mask> toRemove;
+		std::vector<util::Mask> toRemoveHor;
 		for (int x = 0; x < brushMask.cols; ++x)
 		{
 			int start = -1;
@@ -272,15 +272,15 @@ void ContentAwareRemoval(cv::Mat &img)
 			}
 
 			if (start != -1 && end != -1)
-				toRemove.push_back({ start, end - start + 1, x });
+				toRemoveHor.push_back({ start, end - start + 1, x });
 		}
 
-		while (!toRemove.empty())
+		while (!toRemoveHor.empty())
 		{
 			std::vector<cv::Mat> channels;
 			cv::split(img, channels);
 			cv::Mat energyMap = CalculateEnergyMap(channels);
-			ModifyHorizontalEnergyMap(energyMap, toRemove, -min);
+			ModifyHorizontalEnergyMap(energyMap, toRemoveHor, -min);
 
 			cv::Mat cumMap = CalculateHorizontalCumMap(energyMap);
 			std::vector<int> seam = FindHorizontalSeamDP(cumMap);
@@ -288,7 +288,7 @@ void ContentAwareRemoval(cv::Mat &img)
 			VisualizeHorizontalSeam(img, seam, cv::Vec3b(0, 0, 255));
 			RemoveHorizontalSeam(img, seam);
 
-			if (ModifyMask(toRemove, seam))
+			if (ModifyMask(toRemoveHor, seam))
 				break;
 		}
 	}
@@ -477,21 +477,21 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 			// ensure we are not at the last row (vertical edge)
 			if (r < rows - 1)
 			{
-				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c);
+				float weight = static_cast<float>(energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c));
 				graph.add_edge(index(r, c), index(r + 1, c), weight, weight);
 			}
 
 			// ensure we are not at the left most col (diagonal left edge)
 			if (r < rows - 1 && c > 0)
 			{
-				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c - 1);
+				float weight = static_cast<float>(energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c - 1));
 				graph.add_edge(index(r, c), index(r + 1, c - 1), weight, weight);
 			}
 
 			// ensure we are not at the right most col (diagonal right edge)
 			if (r < rows - 1 && c < cols - 1)
 			{
-				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c + 1);
+				float weight = static_cast<float>(energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c + 1));
 				graph.add_edge(index(r, c), index(r + 1, c + 1), weight, weight);
 			}
 		}
@@ -708,21 +708,21 @@ std::vector<int> FindHorizontalSeamGraphCut(cv::Mat const& energyMap)
 			// ensure we are not at the last col (vertical edge)
 			if (c < cols - 1)
 			{
-				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r, c + 1);
+				float weight = static_cast<float>(energyMap.at<double>(r, c) + energyMap.at<double>(r, c + 1));
 				graph.add_edge(index(r, c), index(r, c + 1), weight, weight);
 			}
 
 			// ensure we are not at the first row (diagonal up edge)
 			if (c < cols - 1 && r > 0)
 			{
-				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r - 1, c + 1);
+				float weight = static_cast<float>(energyMap.at<double>(r, c) + energyMap.at<double>(r - 1, c + 1));
 				graph.add_edge(index(r, c), index(r - 1, c + 1), weight, weight);
 			}
 
 			// ensure we are not at the last row (diagonal down edge)
 			if (c < cols - 1 && r < rows - 1)
 			{
-				float weight = energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c + 1);
+				float weight = static_cast<float>(energyMap.at<double>(r, c) + energyMap.at<double>(r + 1, c + 1));
 				graph.add_edge(index(r, c), index(r + 1, c + 1), weight, weight);
 			}
 		}

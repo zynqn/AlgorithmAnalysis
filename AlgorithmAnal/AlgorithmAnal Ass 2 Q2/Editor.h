@@ -90,7 +90,7 @@ namespace edit
 
 	class SeamCarver : public EditorWindow
 	{
-		int width = 2.f, height = 2.f;
+		int width = 2, height = 2;
 
 		const std::array<const char *, MAX_ALGO> modes =
 		{

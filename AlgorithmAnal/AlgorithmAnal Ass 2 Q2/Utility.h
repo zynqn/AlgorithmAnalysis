@@ -99,22 +99,6 @@ namespace util
 		std::cout << label << ": " << elapsed << " ms \n";
 	}
 
-	// Function to zoom into the image
-	inline cv::Mat zoomImage(const cv::Mat &img, double zoom, const cv::Point2d &center)
-	{
-		int width = static_cast<int>(img.cols / zoom);
-		int height = static_cast<int>(img.rows / zoom);
-
-		cv::Rect roi(center.x - width / 2, center.y - height / 2, width, height);
-		roi = roi & cv::Rect(0, 0, img.cols, img.rows);  // Ensure ROI is within image bounds
-
-		// Update the new zoom center based on the scaling
-		zoomCenter.x = (zoomCenter.x - roi.x) / zoom;  // Adjusting the zoom center x
-		zoomCenter.y = (zoomCenter.y - roi.y) / zoom;  // Adjusting the zoom center y
-
-		return img(roi).clone();  // Return the zoomed image
-	}
-
 	/*! ------------ String Manipulation ------------ */
 
 		// assume str is in pascal or camel case

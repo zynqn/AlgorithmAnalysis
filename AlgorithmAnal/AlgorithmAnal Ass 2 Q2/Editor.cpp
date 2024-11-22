@@ -53,7 +53,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		PostQuitMessage(0);
 		exit(0);
-		return 0;
 	}
 
 	// Crucial: Add ImGui message handling
@@ -72,7 +71,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			PostQuitMessage(0); // Close the application
 			exit(0);
-			return 0;
 		}
 		break;
 	}
