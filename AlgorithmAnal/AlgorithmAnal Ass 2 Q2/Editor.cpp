@@ -333,6 +333,7 @@ namespace edit
 		}
 		else
 			UnloadImage();
+		maskInitialized = false;
 	}
 
 	SeamCarver::SeamCarver(const std::string &_name, bool _isToggleable)
@@ -357,8 +358,8 @@ namespace edit
 		if (carveSelected != CARVE_TO_SIZE)
 			ImGui::BeginDisabled();
 
-		ImGui::SliderInt("Target Width", &width, 1, cols, "%d", ImGuiSliderFlags_AlwaysClamp);
-		ImGui::SliderInt("Target Height", &height, 1, rows, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SliderInt("Target Width", &width, 2, cols, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::SliderInt("Target Height", &height, 2, rows, "%d", ImGuiSliderFlags_AlwaysClamp);
 
 		if (ImGui::BeginCombo("Algorithm", modes[modeSelected]))
 		{
@@ -396,7 +397,7 @@ namespace edit
 		ImGui::Separator();
 		AddSpace(2);
 
-		ImGui::InputInt("Delay per Seam", &waitFor, 1, 10);
+		ImGui::SliderInt("Delay per Seam", &waitFor, 1, 1000, "%d", ImGuiSliderFlags_AlwaysClamp);
 		ImGui::SameLine();
 		StyleWrap(ImGuiCol_Text, LIGHT_BLUE, IconWrap(ImGui::Text(ICON_FA_INFO_CIRCLE);))
 		ImGui::SetItemTooltip("Adjust the amount of time taken per seam carve in ms.");
@@ -723,18 +724,19 @@ void mouseCallback(int event, int x, int y, int flags, void* data)
 {
 	cv::Mat* img = (cv::Mat*)data;
 
-	if (!maskInitialized || brushMask.empty())
-	{
-		initializeBrushMask(*img);
-		editor.GetWindow<edit::ImageLoader>()->ReloadImage();
-	}
-
 	if (brushMask.size() != img->size())
 		brushMask = cv::Mat::zeros(img->size(), CV_8UC1);
 
 	switch (event)
 	{
 	case cv::EVENT_LBUTTONDOWN:
+
+		if (!maskInitialized || brushMask.empty())
+		{
+			initializeBrushMask(*img);
+			editor.GetWindow<edit::ImageLoader>()->ReloadImage();
+		}
+
 		isDrawing = true;
 		drawBrush(*img, cv::Point(x, y));
 		break;
