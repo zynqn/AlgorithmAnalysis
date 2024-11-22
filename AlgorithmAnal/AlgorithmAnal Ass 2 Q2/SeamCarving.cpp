@@ -507,7 +507,7 @@ std::vector<int> FindVerticalSeamGraphCut(cv::Mat const& energyMap)
 	// compute max flow
 	util::BeginProfile();
 	float flow = graph.maxflow();
-	util::EndProfile("Max is 13");
+	util::EndProfile("Maxflow time taken:");
 
 	std::vector<int> seam(rows);
 
@@ -738,7 +738,7 @@ std::vector<int> FindHorizontalSeamGraphCut(cv::Mat const& energyMap)
 	// compute max flow
 	util::BeginProfile();
 	float flow = graph.maxflow();
-	util::EndProfile("Max is 13");
+	util::EndProfile("Maxflow time taken:");
 
 
 	std::vector<int> seam(cols);
