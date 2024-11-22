@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\maxflow-master;$(SolutionDir)lib\maxflow-master\maxflow;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\python\libs;$(SolutionDir)lib\maxflow;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\imgui;$(SolutionDir)lib\maxflow-master;$(SolutionDir)lib\maxflow-master\maxflow;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\maxflow;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)lib\python\include;$(SolutionDir)lib\numpy\include;$(SolutionDir)lib\imgui;$(SolutionDir)lib\maxflow-master\maxflow;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\python\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\imgui;$(SolutionDir)lib\maxflow-master\maxflow;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -178,7 +178,6 @@ xcopy "$(SolutionDir)lib\opencv\bin\opencv_world4100.dll" "$(TargetDir)" /Y</Com
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="IconsFontAwesome5.h" />
-    <ClInclude Include="matplotlibcpp.h" />
     <ClInclude Include="SeamCarving2.h" />
     <ClInclude Include="Utility2.h" />
     <ClInclude Include="WinManager.h" />

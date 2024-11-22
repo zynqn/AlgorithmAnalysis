@@ -15,22 +15,14 @@
 #include "Editor.h"
 #include "WinManager.h"
 
-// graph
-#include "matplotlibcpp.h"
 
 #include <Windows.h>
-
-namespace plt = matplotlibcpp;
 
 edit::Editor editor;
 
 WinManager winManager;
 
-void plotter(std::vector<std::vector<double>> X, std::vector<std::vector<double>> Y, std::vector<std::vector<double>> Z)
-{
-	plt::plot_surface(X, Y, Z);  // Plot the 3D surface
-	//plt::show();  // Display the plot once
-}
+
 
 
 int main()
@@ -97,32 +89,6 @@ int main()
 	// GET ORIGINAL ENERGY MAP
 	// =======================
 
-#if 0
-	// Split the image into its 3 channels (B, G, R)
-		std::vector<cv::Mat> channels;
-		cv::split(originalImg, channels);  // channels[0] = Blue, channels[1] = Green, channels[2] = Red
-
-		// get original energy map
-		energyMap = CalculateEnergyMap(channels);
-
-		// Convert the energy map back to 8-bit format for display
-		cv::normalize(energyMap, energyMap, 0, 255, cv::NORM_MINMAX);
-		energyMap.convertTo(displayEnergyMap, CV_8U);
-
-		rows = energyMap.rows;
-		cols = energyMap.cols;
-
-		// ===================
-		// DISPLAY THE WINDOWS
-		// ===================
-
-		winManager.OIWin = true;
-		winManager.EMWin = true;
-
-		// clone the original image for the seam carving
-		imgClone = originalImg.clone();
-#endif
-
 	while (true)
 	{
 		editor.Update();
@@ -133,32 +99,7 @@ int main()
 		util::LockWindow(CARVED_IMAGE_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale) + static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 		util::LockWindow(ALL_SEAMS_W, static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale), static_cast<int>(editor.GetWindow<edit::WindowsManager>()->scale * resolution));
 
-#if 0
-		// ===================== 
-		// PREPARE 3D PLOT 
-		// =====================
-		std::vector<std::vector<double>> X(rows, std::vector<double>(cols));
-		std::vector<std::vector<double>> Y(rows, std::vector<double>(cols));
-		std::vector<std::vector<double>> Z(rows, std::vector<double>(cols));
 
-		for (int i = 0; i < rows; ++i)
-		{
-			for (int j = 0; j < cols; ++j)
-			{
-				X[i][j] = j;  // X-coordinate (columns)
-				Y[i][j] = i;  // Y-coordinate (rows)
-				Z[i][j] = displayEnergyMap.at<uchar>(i, j);  // Z-value (intensity)
-			}
-		}
-		/*std::thread plotThread(plotter, X, Y, Z);
-		plotThread.detach();*/
-		//plotter(X, Y, Z);
-		plt::plot_surface(X, Y, Z);  // Plot the 3D surface
-		plt::show();  // Display the plot once
-		//plt::pause(.5); // Display the plot for 1 second
-
-
-#endif
 
 		winManager.UpdateOIWin(editor.GetWindow<edit::WindowsManager>()->shldOpenOriginalImage, originalImg);
 		winManager.UpdateEMWin(editor.GetWindow<edit::WindowsManager>()->shldOpenEnergyMap, displayEnergyMap);

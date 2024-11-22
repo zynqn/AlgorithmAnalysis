@@ -56,9 +56,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="matplotlibcpp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SeamCarving2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
