@@ -1,3 +1,30 @@
+/**
+ * @file SeamCarving.h
+ * @brief Header file for seam carving operations and utilities.
+ *
+ * This file defines a collection of functions to perform content-aware image resizing
+ * (seam carving). The operations include energy map computation, seam identification,
+ * seam removal, visualization, and boundary drawing for both vertical and horizontal
+ * seams. It also supports different algorithms for seam identification, such as
+ * Greedy, Dynamic Programming (DP), and Graph Cut methods.
+ *
+ * Key Features:
+ * - Compute energy maps for images.
+ * - Identify vertical and horizontal seams using various algorithms.
+ * - Remove identified seams to achieve image resizing.
+ * - Visualize seams and boundaries for debugging and analysis.
+ *
+ * Dependencies:
+ * - OpenCV: Required for image processing.
+ *
+ * Usage:
+ * - Include this file in your project and link against OpenCV to enable the provided functionality.
+ * - Use the provided seam carving functions to resize images while preserving important content.
+ *
+ * Author: Team 12
+ * Date: 21/11/2024
+ */
+
 #include "SeamCarving2.h"
 #include "Utility2.h"
 #include "Editor.h"
